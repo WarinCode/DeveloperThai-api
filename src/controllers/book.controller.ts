@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { responseError } from "../utils/index.js";
-import Reader from "../utils/classes/Reader.js";
-import Writer from "../utils/classes/Writer.js";
 import { Books, BookModel } from "../types/model/book.js";
 import { Params, QueryParams, ReqBody, ResBody } from "../types/types.js";
+import BookProvider from "../data/data.js";
 
 export default class BookController {
   public sendHelloWorld(req: Request, res: Response, next: NextFunction): void {
@@ -16,26 +15,24 @@ export default class BookController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const books: Books | null = await Reader.readAllData();
-
-      if (books === null) {
-        throw new Error("ไม่มีรายการข้อมูลหนังสือใดๆ!");
-      }
-      res.status(200).type("json").json(books);
+      res.status(200).type("json").json(BookProvider.getBooks());
     } catch (e: any) {
       responseError(res, e);
     }
   }
 
   public async getBook(
-    { params, url }: Request<Params>,
+    { params: { id, isbn }, url }: Request<Params>,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      const book: BookModel | null | undefined = await Reader.readData(
-        parseInt(params.id ?? params.isbn)
-      );
+      const book: BookModel | undefined = BookProvider.getBooks()
+        .filter(
+          (item: BookModel): boolean =>
+            item.id === parseInt(id) || item.isbn === parseInt(isbn)
+        )
+        .at(0);
 
       if (!book) {
         throw new Error("ไม่มีข้อมูลหนังสือที่ท่านเรียกหา!");
@@ -53,14 +50,9 @@ export default class BookController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const books: Books | null = await Reader.readAllData();
-
-      if (books === null || !keyword) {
-        throw new Error("ไม่มีรายการข้อมูลหนังสือใดๆ!");
-      }
-
-      const results: Books = books.filter((book: BookModel): boolean =>
-        book.bookName.toLowerCase().includes(keyword.trim().toLowerCase())
+      const results: Books = BookProvider.getBooks().filter(
+        (book: BookModel): boolean =>
+          book.bookName.toLowerCase().includes(keyword.trim().toLowerCase())
       );
 
       if (!results.length) {
@@ -79,15 +71,7 @@ export default class BookController {
     next: NextFunction
   ) {
     try {
-      const books: Books | null = await Reader.readAllData();
-
-      if (books === null) {
-        throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
-      }
-
-      books.push(body);
-      await Writer.writeFile(JSON.stringify(books, null, 4));
-
+      BookProvider.addBook(body);
       res.status(201).json({ message: "เพิ่มหนังสือใหม่สำเร็จ" });
     } catch (e: any) {
       responseError(res, e);
@@ -100,21 +84,7 @@ export default class BookController {
     next: NextFunction
   ) {
     try {
-      const books: Books | null = await Reader.readAllData();
-
-      if (books === null) {
-        throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
-      }
-
-      const books2: Books = books.map((book: BookModel): BookModel => {
-        if (book.id === parseInt(id)) {
-          book = body;
-        }
-        return book;
-      });
-
-      await Writer.writeFile(JSON.stringify(books2, null, 4));
-
+      BookProvider.updateBook(parseInt(id), body);
       res.status(200).json({ message: "อัปเดตข้อมูลหนังสือสำเร็จ" });
     } catch (e: any) {
       responseError(res, e);
@@ -127,17 +97,7 @@ export default class BookController {
     next: NextFunction
   ) {
     try {
-      const books: Books | null = await Reader.readAllData();
-
-      if (books === null) {
-        throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
-      }
-
-      const books2 = books.filter(
-        (book: BookModel) => book.id !== parseInt(id)
-      );
-      await Writer.writeFile(JSON.stringify(books2, null, 4));
-
+      BookProvider.deleteBook(parseInt(id));
       res.status(200).json({ message: "ลบหนังสือใหม่สำเร็จ" });
     } catch (e: any) {
       responseError(res, e);
