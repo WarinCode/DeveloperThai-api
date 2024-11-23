@@ -1,0 +1,186 @@
+[
+    {
+        "id": 1,
+        "bookName": "พัฒนา Mobile App ด้วย Flutter ฉบับเรียนรู้เพิ่มเติม",
+        "imageUrl": "https://developerthai.com/covers/flutter_lm.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160852604,
+        "price": 350
+    },
+    {
+        "id": 2,
+        "bookName": "พัฒนาระบบงานด้วย VBA บน Excel",
+        "imageUrl": "https://developerthai.com/covers/vba_excel.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160851379,
+        "price": 295
+    },
+    {
+        "id": 3,
+        "bookName": "รวมพื้นฐานการสร้าง WEB",
+        "imageUrl": "https: //developerthai.com/covers/web_basics.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160851140,
+        "price": 345
+    },
+    {
+        "id": 4,
+        "bookName": "พัฒนาแอปแบบ Multi-Platform ด้วย Flutter",
+        "imageUrl": "https://developerthai.com/covers/flutter.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160848645,
+        "price": 350
+    },
+    {
+        "id": 5,
+        "bookName": "การเขียนโปรแกรมภาษา C ขั้นพื้นฐาน",
+        "imageUrl": "https: //developerthai.com/covers/c_lang.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160847426,
+        "price": 295
+    },
+    {
+        "id": 6,
+        "bookName": "เขียนโปรแกรมด้วยภาษา Python ฉบับเพิ่มเติม กับ PyQt และ Pygame",
+        "imageUrl": "https: //developerthai.com/covers/py_plus.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160846238,
+        "price": 285
+    },
+    {
+        "id": 7,
+        "bookName": "การเขียนโปรแกรมด้วย Python ฉบับพื้นฐาน",
+        "imageUrl": "https: //developerthai.com/covers/py_basic.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160845156,
+        "price": 340
+    },
+    {
+        "id": 8,
+        "bookName": "พัฒนา Web App แบบ Responsive ด้วย Bootstrap5 ร่วมกับ Vue.js และ Node.js",
+        "imageUrl": "https: //developerthai.com/covers/bs5_vn.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160843756,
+        "price": 350
+    },
+    {
+        "id": 9,
+        "bookName": "พัฒนา Application ด้วย React และ React Native",
+        "imageUrl": "https: //developerthai.com/covers/react.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160843220,
+        "price": 330
+    },
+    {
+        "id": 10,
+        "bookName": "สร้างการเรียนรู้สำหรับ AI ด้วย Python Machine Learning",
+        "imageUrl": "https://developerthai.com/covers/py_ml.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160842131,
+        "price": 330
+    },
+    {
+        "id": 11,
+        "bookName": "พัฒนาเว็บแอปพลิเคชันด้วย JavaScript และ Node.js",
+        "imageUrl": "https: //developerthai.com/covers/js_node.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160841356,
+        "price": 320
+    },
+    {
+        "id": 12,
+        "bookName": "พัฒนาเว็บแอปพลิเคชันด้วย Python Django",
+        "imageUrl": "https://developerthai.com/covers/py_django.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160839568,
+        "price": 330
+    },
+    {
+        "id": 13,
+        "bookName": "วิเคราะห์และจัดการข้อมูลด้วย Python Data Science",
+        "imageUrl": "https: //developerthai.com/covers/py_sci.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160839087,
+        "price": 320
+    },
+    {
+        "id": 14,
+        "bookName": "พัฒนา Mobile App บนระบบ Android ด้วย Kotlin",
+        "imageUrl": "https: //developerthai.com/covers/and_kot.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160837809,
+        "price": 380
+    },
+    {
+        "id": 15,
+        "bookName": "พัฒนา Web Application ด้วย PHP และ MariaDB",
+        "imageUrl": "https://developerthai.com/covers/php_maria.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160836833,
+        "price": 380
+    },
+    {
+        "id": 16,
+        "bookName": "สร้างเว็บไซต์แบบ Responsive ด้วย Bootstrap ร่วมกับ CSS และ JavaScript",
+        "imageUrl": "https: //developerthai.com/covers/bs_css_js.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160834938,
+        "price": 380
+    },
+    {
+        "id": 17,
+        "bookName": "การเขียนโปรแกรมด้วย Python สำหรับผู้เริ่มต้น จำนวนหน้า: 380",
+        "imageUrl": "https: //developerthai.com/covers/py_beginner.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160833979,
+        "price": 270
+    },
+    {
+        "id": 18,
+        "bookName": "การเขียนโปรแกรม Swift และ iOS",
+        "imageUrl": "https://developerthai.com/covers/swift_ios.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160833313,
+        "price": 420
+    },
+    {
+        "id": 19,
+        "bookName": "การเขียนโปรแกรมด้วย Java สำหรับผู้เริ่มต้น",
+        "imageUrl": "https://developerthai.com/covers/java_beginner.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160827923,
+        "price": 320
+    },
+    {
+        "id": 20,
+        "bookName": "การเขียนโปรแกรม Java และ Android",
+        "imageUrl": "https: //developerthai.com/covers/java_android.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160827923,
+        "price": 340
+    },
+    {
+        "id": 21,
+        "bookName": "พัฒนา Mobile App ฉบับ Pro Android",
+        "imageUrl": "https://developerthai.com/covers/pro_android.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160830602,
+        "price": 340
+    },
+    {
+        "id": 22,
+        "bookName": "สร้าง Windows Application ด้วย Visual Basic 2015",
+        "imageUrl": "https: //developerthai.com/covers/vb2015.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160823512,
+        "price": 320
+    },
+    {
+        "id": 23,
+        "bookName": "พัฒนาเว็บแอปพลิเคชั่นด้วย PHP ร่วมกับ MySQL และ jQuery",
+        "imageUrl": "https: //developerthai.com/covers/php_my_jq.png",
+        "author": "บัญชา ปะสีละเตสัง",
+        "isbn": 9786160822195,
+        "price": 340
+    }
+]
