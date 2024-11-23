@@ -5,10 +5,10 @@ import dotenv from "dotenv";
 import { EnvironmentVariables } from "./types/types.js";
 import BookController from "./controllers/book.controller.js";
 
-// สร้าง server แล้วกำหนดหมายเลข port ของ server
+// สร้าง object ชื่อ app
 const app: Express = express();
 
-// อ่านค่าตัวแปรใน env แล้วกำหนดหมายเลข port
+// อ่านค่าตัวแปรในไฟล์ .env แล้วกำหนดค่าหมายเลข port
 dotenv.config();
 const port: number = parseInt((<EnvironmentVariables>process.env).PORT) ?? 3000;
 const bookController: BookController = new BookController();
