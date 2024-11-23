@@ -38,13 +38,12 @@ export default class BookController {
       );
 
       if (!book) {
-        res.status(400).send(`ไม่มีข้อมูลหนังสือที่ท่านเรียกหา!`);
-        return;
+        throw new Error("ไม่มีข้อมูลหนังสือที่ท่านเรียกหา!");
       }
 
       res.status(200).type("json").json(book);
     } catch (e: any) {
-      responseError(res, e);
+      responseError(res, e, 400);
     }
   }
 
@@ -116,7 +115,7 @@ export default class BookController {
 
       await Writer.writeFile(JSON.stringify(books2, null, 4));
 
-      res.status(201).json({ message: "อัปเดตข้อมูลหนังสือสำเร็จ" });
+      res.status(200).json({ message: "อัปเดตข้อมูลหนังสือสำเร็จ" });
     } catch (e: any) {
       responseError(res, e);
     }
@@ -139,7 +138,7 @@ export default class BookController {
       );
       await Writer.writeFile(JSON.stringify(books2, null, 4));
 
-      res.status(201).json({ message: "ลบหนังสือใหม่สำเร็จ" });
+      res.status(200).json({ message: "ลบหนังสือใหม่สำเร็จ" });
     } catch (e: any) {
       responseError(res, e);
     }
@@ -150,6 +149,6 @@ export default class BookController {
     res: Response,
     next: NextFunction
   ): Promise<void> {
-    res.status(404).send("<h1>ไม่พบหน้าเพจที่เรียกหา!</h1>");
+    responseError(res, new Error("ไม่พบหน้าเพจที่เรียกหา!"), 404);
   }
 }
