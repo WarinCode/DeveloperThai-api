@@ -4,8 +4,10 @@
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
-    "build": "npx tsc",
-    "dev": "tsx --watch src/server.ts"
+    "copy-data": "copyfiles -u 2 src/data/books.json build/data/",
+    "build": "npx tsc && npm run copy-data",
+    "dev": "tsx --watch src/server.ts",
+    "start": "node build/server.js"
   },
   "keywords": [],
   "author": "",
@@ -24,6 +26,7 @@
     "@types/express": "^5.0.0",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.9.1",
+    "copyfiles": "^2.4.1",
     "typescript": "^5.6.3"
   }
 }

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { responseError } from "../utils/index.js";
 import Reader from "../utils/classes/Reader.js";
 import Writer from "../utils/classes/Writer.js";
+import BookValidator from "../utils/classes/BookValidator.js";
 import { Books, BookModel } from "../types/model/book.js";
 import { Params, QueryParams, ReqBody, ResBody } from "../types/types.js";
 
@@ -22,7 +23,7 @@ export default class BookController {
         throw new Error("ไม่มีรายการข้อมูลหนังสือใดๆ!");
       }
       res.status(200).type("json").json(books);
-    } catch (e: any) {
+    } catch (e: unknown) {
       responseError(res, e);
     }
   }
@@ -42,7 +43,7 @@ export default class BookController {
       }
 
       res.status(200).type("json").json(book);
-    } catch (e: any) {
+    } catch (e: unknown) {
       responseError(res, e, 400);
     }
   }
@@ -68,7 +69,7 @@ export default class BookController {
       }
 
       res.status(200).type("json").json(results);
-    } catch (e) {
+    } catch (e: unknown) {
       responseError(res, e);
     }
   }
@@ -85,11 +86,43 @@ export default class BookController {
         throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
       }
 
+      if (await BookValidator.isIsbnExists(body.isbn)) {
+        throw new Error("มีเลข isbn นี้ซ้ำอยู่แล้วในข้อมูล!");
+      }
+
+      if (!(await BookValidator.checkIsbnLength(body.isbn))) {
+        throw new Error("ความยาวของเลข isbn จะต้องมีความยาว 13 หลักเท่านั้น!");
+      }
+
+      if (!(await BookValidator.isKeyExists("bookName", body))) {
+        body.bookName = "";
+      }
+
+      if (!(await BookValidator.isKeyExists("imageUrl", body))) {
+        body.imageUrl = "";
+      }
+
+      if (!(await BookValidator.isKeyExists("author", body))) {
+        body.author = "";
+      }
+
+      if (!(await BookValidator.isKeyExists("price", body))) {
+        body.price = 0;
+      }
+
+      if (!(await BookValidator.isKeyExists("pageCount", body))) {
+        body.pageCount = 0;
+      }
+
+      if (!(await BookValidator.isKeyExists("tableofContents", body))) {
+        body.tableofContents = [];
+      }
+
       books.push(body);
       await Writer.writeFile(JSON.stringify(books, null, 4));
 
       res.status(201).json({ message: "เพิ่มหนังสือใหม่สำเร็จ" });
-    } catch (e: any) {
+    } catch (e: unknown) {
       responseError(res, e);
     }
   }
@@ -106,17 +139,22 @@ export default class BookController {
         throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
       }
 
-      const books2: Books = books.map((book: BookModel): BookModel => {
-        if (book.isbn === parseInt(isbn)) {
-          book = body;
-        }
-        return book;
-      });
+      if (await BookValidator.isIsbnExists(parseInt(isbn))) {
+        const books2: Books = books.map((book: BookModel): BookModel => {
+          if (book.isbn === parseInt(isbn)) {
+            book = body;
+          }
+          return book;
+        });
 
-      await Writer.writeFile(JSON.stringify(books2, null, 4));
+        await Writer.writeFile(JSON.stringify(books2, null, 4));
+        res.status(200).json({ message: "อัปเดตข้อมูลหนังสือสำเร็จ" });
 
-      res.status(200).json({ message: "อัปเดตข้อมูลหนังสือสำเร็จ" });
-    } catch (e: any) {
+        return;
+      }
+
+      throw new Error("ไม่พบข้อมูลหนังสือที่ต้องการจะอัปเดต!");
+    } catch (e: unknown) {
       responseError(res, e);
     }
   }
@@ -133,13 +171,19 @@ export default class BookController {
         throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
       }
 
-      const books2 = books.filter(
-        (book: BookModel) => book.isbn !== parseInt(isbn)
-      );
-      await Writer.writeFile(JSON.stringify(books2, null, 4));
+      if (await BookValidator.isIsbnExists(parseInt(isbn))) {
+        const books2 = books.filter(
+          (book: BookModel) => book.isbn !== parseInt(isbn)
+        );
 
-      res.status(200).json({ message: "ลบหนังสือใหม่สำเร็จ" });
-    } catch (e: any) {
+        await Writer.writeFile(JSON.stringify(books2, null, 4));
+        res.status(200).json({ message: "ลบหนังสือใหม่สำเร็จ" });
+
+        return;
+      }
+
+      throw new Error("ไม่พบข้อมูลหนังสือที่ต้องการจะลบ!");
+    } catch (e: unknown) {
       responseError(res, e);
     }
   }
