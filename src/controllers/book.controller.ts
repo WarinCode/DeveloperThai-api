@@ -28,13 +28,13 @@ export default class BookController {
   }
 
   public async getBook(
-    { params, url }: Request<Params>,
+    { params }: Request<Params>,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
       const book: BookModel | null | undefined = await Reader.readData(
-        parseInt(params.id ?? params.isbn)
+        parseInt(params.isbn)
       );
 
       if (!book) {
@@ -60,7 +60,7 @@ export default class BookController {
       }
 
       const results: Books = books.filter((book: BookModel): boolean =>
-        book.bookName.toLowerCase().includes(keyword.trim().toLowerCase())
+        book.bookName.trim().toLowerCase().includes(keyword.trim().toLowerCase())
       );
 
       if (!results.length) {
@@ -95,7 +95,7 @@ export default class BookController {
   }
 
   public async update(
-    { params: { id }, body }: Request<Params, ResBody, ReqBody>,
+    { params: { isbn }, body }: Request<Params, ResBody, ReqBody>,
     res: Response,
     next: NextFunction
   ) {
@@ -107,7 +107,7 @@ export default class BookController {
       }
 
       const books2: Books = books.map((book: BookModel): BookModel => {
-        if (book.id === parseInt(id)) {
+        if (book.isbn === parseInt(isbn)) {
           book = body;
         }
         return book;
@@ -122,7 +122,7 @@ export default class BookController {
   }
 
   public async delete(
-    { params: { id } }: Request<Params>,
+    { params: { isbn } }: Request<Params>,
     res: Response,
     next: NextFunction
   ) {
@@ -134,7 +134,7 @@ export default class BookController {
       }
 
       const books2 = books.filter(
-        (book: BookModel) => book.id !== parseInt(id)
+        (book: BookModel) => book.isbn !== parseInt(isbn)
       );
       await Writer.writeFile(JSON.stringify(books2, null, 4));
 

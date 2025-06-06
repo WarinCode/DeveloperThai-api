@@ -5,7 +5,6 @@ export interface EnvironmentVariables extends NodeJS.ProcessEnv {
 }
 
 export interface Params {
-    id: string;
     isbn: string;
 }
 

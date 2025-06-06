@@ -1,12 +1,10 @@
 import fs, { constants } from "fs/promises";
+import path from "path"
+import { __dirname } from "../../data/data-path.js";
 
 export default class FileManager {
-  protected static getPath(defaultPath?: string): string {
-    if(typeof defaultPath === "string"){
-        return defaultPath.concat("\\src\\data\\books.json");
-    }
-
-    return process.cwd().concat("\\src\\data\\books.json");
+  protected static getPath(): string {
+    return path.join(__dirname, "books.json");
   }
 
   protected static async accessible(): Promise<boolean> {
@@ -19,3 +17,5 @@ export default class FileManager {
     }
   }
 }
+
+

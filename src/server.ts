@@ -24,11 +24,10 @@ app
 app
   .get("/", bookController.sendHelloWorld)
   .get("/api/books", bookController.getBooks)
-  .get("/api/book/isbn=:isbn", bookController.getBook)
-  .get("/api/book/:id", bookController.getBook)
-  .get("/api/search/", bookController.search) // /api/book/search/?keyword=:keyword
+  .get("/api/books/search", bookController.search) // /api/books/search/?keyword=:keyword
+  .get("/api/books/:isbn", bookController.getBook)
   .post("/api/create", bookController.create)
-  .put("/api/update/:id", bookController.update)
-  .delete("/api/delete/:id", bookController.delete)
+  .put("/api/update/:isbn", bookController.update)
+  .delete("/api/delete/:isbn", bookController.delete)
   .all("*", bookController.pageNotFound)
   .listen(port, (): void => console.log(`Server is running on port: ${port}`));

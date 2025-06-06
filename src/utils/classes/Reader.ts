@@ -31,7 +31,7 @@ export default class Reader extends FileManager {
       }
 
       const book: BookModel | undefined = books
-        .filter((item: BookModel): boolean => item.id === n || item.isbn === n)
+        .filter((item: BookModel): boolean => item.isbn === n)
         .at(0);
 
       return book;
