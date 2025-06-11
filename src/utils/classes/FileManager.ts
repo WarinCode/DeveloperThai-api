@@ -1,17 +1,16 @@
 import fs, { constants } from "fs/promises";
-import path from "path"
-import { __dirname } from "../../data/data-path.js";
+import { getDataPath } from "../index.js";
 
 export default class FileManager {
-  protected static getPath(): string {
-    return path.join(__dirname, "books.json");
+  protected static getPath(filename: string = "books.json"): string {
+    return getDataPath(filename);
   }
 
-  protected static async accessible(): Promise<boolean> {
+  protected static async accessible(filename: string = "books.json"): Promise<boolean> {
     try {
-      await fs.access(this.getPath(), constants.W_OK | constants.R_OK);
+      await fs.access(this.getPath(filename), constants.W_OK | constants.R_OK);
       return true;
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       return false;
     }

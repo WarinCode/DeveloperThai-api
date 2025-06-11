@@ -3,8 +3,9 @@ import { responseError } from "../utils/index.js";
 import Reader from "../utils/classes/Reader.js";
 import Writer from "../utils/classes/Writer.js";
 import BookValidator from "../utils/classes/BookValidator.js";
-import { Books, BookModel } from "../types/model/book.js";
+import { Books, BookModel } from "../types/models/book.js";
 import { Params, QueryParams, ReqBody, ResBody } from "../types/types.js";
+import BookSchema from "../types/schemas/book.js";
 
 export default class BookController {
   public sendHelloWorld(req: Request, res: Response, next: NextFunction): void {
@@ -17,7 +18,7 @@ export default class BookController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const books: Books | null = await Reader.readAllData();
+      const books: Books | null = await Reader.readAllData<Books>();
 
       if (books === null) {
         throw new Error("ไม่มีรายการข้อมูลหนังสือใดๆ!");
@@ -34,7 +35,7 @@ export default class BookController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const book: BookModel | null | undefined = await Reader.readData(
+      const book: BookModel | null | undefined = await Reader.readBookData(
         parseInt(params.isbn)
       );
 
@@ -54,7 +55,7 @@ export default class BookController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const books: Books | null = await Reader.readAllData();
+      const books: Books | null = await Reader.readAllData<Books>();
 
       if (books === null || !keyword) {
         throw new Error("ไม่มีรายการข้อมูลหนังสือใดๆ!");
@@ -80,11 +81,14 @@ export default class BookController {
     next: NextFunction
   ) {
     try {
-      const books: Books | null = await Reader.readAllData();
+      const books: Books | null = await Reader.readAllData<Books>();
 
       if (books === null) {
         throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
       }
+
+      BookSchema.parse(body);
+      BookValidator.checkPropertyName(body);
 
       if (await BookValidator.isIsbnExists(body.isbn)) {
         throw new Error("มีเลข isbn นี้ซ้ำอยู่แล้วในข้อมูล!");
@@ -92,30 +96,6 @@ export default class BookController {
 
       if (!(await BookValidator.checkIsbnLength(body.isbn))) {
         throw new Error("ความยาวของเลข isbn จะต้องมีความยาว 13 หลักเท่านั้น!");
-      }
-
-      if (!(await BookValidator.isKeyExists("bookName", body))) {
-        body.bookName = "";
-      }
-
-      if (!(await BookValidator.isKeyExists("imageUrl", body))) {
-        body.imageUrl = "";
-      }
-
-      if (!(await BookValidator.isKeyExists("author", body))) {
-        body.author = "";
-      }
-
-      if (!(await BookValidator.isKeyExists("price", body))) {
-        body.price = 0;
-      }
-
-      if (!(await BookValidator.isKeyExists("pageCount", body))) {
-        body.pageCount = 0;
-      }
-
-      if (!(await BookValidator.isKeyExists("tableofContents", body))) {
-        body.tableofContents = [];
       }
 
       books.push(body);
@@ -133,11 +113,14 @@ export default class BookController {
     next: NextFunction
   ) {
     try {
-      const books: Books | null = await Reader.readAllData();
+      const books: Books | null = await Reader.readAllData<Books>();
 
       if (books === null) {
         throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
       }
+
+      BookSchema.parse(body);
+      BookValidator.checkPropertyName(body);
 
       if (await BookValidator.isIsbnExists(parseInt(isbn))) {
         const books2: Books = books.map((book: BookModel): BookModel => {
@@ -165,7 +148,7 @@ export default class BookController {
     next: NextFunction
   ) {
     try {
-      const books: Books | null = await Reader.readAllData();
+      const books: Books | null = await Reader.readAllData<Books>();
 
       if (books === null) {
         throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
