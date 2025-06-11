@@ -1,39 +1,33 @@
 import express, { Express, urlencoded, json } from "express";
-import logger from "morgan";
+import morgan from "morgan";
 import cors from "cors";
-import { configDotenv } from "dotenv";
-import { corsOptions, dotenvOptions, limiter } from "./configuration/index.js";
+import dotenv from "dotenv";
+import { EnvironmentVariables } from "./types/types.js";
 import BookController from "./controllers/book.controller.js";
-import UserController from "./controllers/user.controller.js";
-import AuthMiddleware from "./middlewares/AuthMiddleware.js";
-import { getStaticPath } from "./utils/index.js";
 
+// สร้าง object ชื่อ app
 const app: Express = express();
 
-configDotenv(dotenvOptions);
-const port: number = 3000;
+// อ่านค่าตัวแปรในไฟล์ .env แล้วกำหนดค่าหมายเลข port
+dotenv.config();
+const port: number = parseInt((<EnvironmentVariables>process.env).PORT) ?? 3000;
 const bookController: BookController = new BookController();
-const userController: UserController = new UserController();
 
+// ใช้ middlewares
 app
   .use(urlencoded({ extended: true }))
   .use(json())
-  .use(logger("dev"))
-  .use(cors(corsOptions))
-  .use(express.static(getStaticPath()))
-  .use(limiter)
-  .use("/api/*", AuthMiddleware.authorization);
+  .use(morgan("dev"))
+  .use(cors());
 
+// กำหนดเส้น api endpoints ทั้งหมด
 app
   .get("/", bookController.sendHelloWorld)
-  .post("/sign-in", userController.signIn)
-  .post("/sign-up", userController.signUp)
   .get("/api/books", bookController.getBooks)
   .get("/api/books/search", bookController.search) // /api/books/search/?keyword=:keyword
   .get("/api/books/:isbn", bookController.getBook)
-  .post("/api/books/create", bookController.create)
-  .put("/api/books/update/:isbn", bookController.update)
-  .delete("/api/books/delete/:isbn", bookController.delete)
-  .get("/api/user/data", userController.getUserData)
+  .post("/api/create", bookController.create)
+  .put("/api/update/:isbn", bookController.update)
+  .delete("/api/delete/:isbn", bookController.delete)
   .all("*", bookController.pageNotFound)
   .listen(port, (): void => console.log(`Server is running on port: ${port}`));

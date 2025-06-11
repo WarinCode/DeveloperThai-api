@@ -1,10 +1,8 @@
 import FileManager from "./FileManager.js";
 import Reader from "./Reader.js";
-import { BookModel, Books } from "../../types/models/book.js";
+import { BookModel, Books } from "../../types/model/book.js";
 
 export default class BookValidator extends FileManager {
-    private static keys: string[] = ["bookName", "imageUrl", "author", "isbn", "price", "pageCount", "tableofContents"];
-
     public static async isIsbnExists(isbn: number): Promise<boolean> {
         if (await this.accessible()) {
             const books: Books = <Books>(await Reader.readAllData());
@@ -19,19 +17,11 @@ export default class BookValidator extends FileManager {
         return false;
     }
 
-    public static checkIsbnLength(isbn: number): boolean {
+    public static async checkIsbnLength(isbn: number): Promise<boolean> {
         return String(isbn).length === 13;
     }
 
-    public static isKeyExists(key: keyof BookModel, data: Partial<BookModel>): boolean {
+    public static async isKeyExists(key: keyof BookModel, data: Partial<BookModel>): Promise<boolean> {
         return key in data;
-    }
-
-    public static checkPropertyName(book: BookModel): void {
-        for (const key in book) {
-            if (!this.keys.includes(key)) {
-                throw new Error(`ไม่มีชื่อ property '${key}' นี้อยู่ใน model หนังสือ!`);
-            }
-        }
     }
 }
