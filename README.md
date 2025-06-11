@@ -23,7 +23,7 @@
         "isbn": 123456789,
         "price": 1300,
         "pageCount": 100,
-        "pageofContents": []
+        "tableofContents": []
     }
 ```
 ถ้าเพิ่มข้อมูลสำเร็จจะ response กลับมาเป็นข้อความว่าเพิ่มข้อมูลสำเร็จแล้ว

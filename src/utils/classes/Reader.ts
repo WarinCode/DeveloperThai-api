@@ -1,16 +1,17 @@
 import fs from "fs/promises";
-import { BookModel, Books } from "../../types/model/book.js";
+import { BookModel, Books } from "../../types/models/book.js";
 import FileManager from "./FileManager.js";
+import { Users } from "../../types/models/user.js";
 
 export default class Reader extends FileManager {
-  public static async readAllData(): Promise<Books | null> {
+  public static async readAllData<T extends Books | Users>(filename: string = "books.json"): Promise<T | null> {
     try {
       if (await this.accessible()) {
-        const text: string = await fs.readFile(this.getPath(), {
+        const text: string = await fs.readFile(this.getPath(filename), {
           encoding: "utf8",
         });
-        const books: Books = JSON.parse(text);
-        return books;
+        const data: T = JSON.parse(text);
+        return data;
       }
 
       throw new Error("ไม่สามารถเปิดอ่านไฟล์ข้อมูลได้!");
@@ -20,22 +21,22 @@ export default class Reader extends FileManager {
     }
   }
 
-  public static async readData(
-    n: number
+  public static async readBookData(
+    isbn: number
   ): Promise<BookModel | null | undefined> {
     try {
-      const books: Books | null = await this.readAllData();
+      const books: Books | null = await this.readAllData<Books>();
 
       if (books === null || books.length === 0) {
         return null;
       }
 
       const book: BookModel | undefined = books
-        .filter((item: BookModel): boolean => item.isbn === n)
+        .filter((item: BookModel): boolean => item.isbn === isbn)
         .at(0);
 
       return book;
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error(e);
       return null;
     }

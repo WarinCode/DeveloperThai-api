@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หน้าผู้ใช้งาน</title>
+</head>
+
+<body>
+    <div class="loading" style="display: none;">
+        <h3>Loading ...</h3>
+    </div>
+
+    <div class="container">
+        <h1>รายละเอียดข้อมูลผู้ใช้งาน</h1>
+        <div>
+            <p>Username: <span class="show-username"></span></p>
+            <p>Email: <span class="show-email"></span></p>
+        </div>
+
+        <div>
+            <p>สถานะของ api key <span id="api-key-active"></span></p>
+            <button class="btn-create">สร้าง api key</button>
+            <p class="show-key"></p>
+        </div>
+
+        <div style="margin-top: 20px;" class="btn-group">
+            <button class="btn-edit">แก้ไขข้อมูล</button>
+            <button class="btn-logout" style="margin-inline: 1rem;">ออกจากระบบ</button>
+            <button class="btn-delete">ลบบัญชี</button>
+        </div>
+    </div>
+
+    <p class="error" style="display: none; color: red;">เกิดข้อผิดพลาดขึ้นไม่ามารถดึงข้อมูลผู้ใช้งานมาได้!</p>
+
+    <form style="margin-top: 40px; display: none;">
+        <div>
+            <label for="username">
+                <span>Username: </span>
+                <input type="text" id="username" name="username" required>
+            </label>
+        </div>
+        <div>
+            <label for="email">
+                <span>Email: </span>
+                <input type="email" id="email" name="email" required>
+            </label>
+        </div>
+        <button type="submit">แก้ไขข้อมูลผู้ใช้งาน</button>
+    </form>
+
+    <script type="module">
+        const user = {};
+
+        (async () => {
+            if (!localStorage.getItem("token") && !localStorage.getItem("userId")) {
+                document.querySelector(".error").style.display = "block";
+                document.querySelector(".container").style.display = "none";
+                return;
+            }
+
+            document.querySelector(".loading").style.display = "block";
+            document.querySelector(".container").style.display = "none";
+
+            try {
+                const token = localStorage.getItem("token");
+
+                const response = await fetch("http://localhost:3000/api/user/data", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+
+                if (response.status === 200) {
+                    user.username = data.username;
+                    user.email = data.email;
+                    document.querySelector(".show-username").textContent = user.username;
+                    document.querySelector(".show-email").textContent = user.email;
+                    document.querySelector(".loading").style.display = "none";
+                    document.querySelector(".container").style.display = "block";
+                    return;
+                }
+
+                throw new Error("เกิดข้อผิดพลาดขึ้นไม่ามารถดึงข้อมูลผู้ใช้งานมาได้!");
+            } catch (e) {
+                alert(e?.message);
+                document.querySelector(".container").style.display = "none";
+                document.querySelector(".error").style.display = "block";
+            }
+        })();
+
+        const createApiKey = async () => {
+            try {
+
+            } catch (e) {
+
+            }
+        }
+
+        const logout = async () => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("userId");
+            location.href = "http://localhost:3000/sign-in.html";
+        }
+
+        const editUserData = async () => {
+            const toggleDisplay = document.querySelector("form").style.display === "none";
+            document.querySelector("form").style.display = toggleDisplay ? "block" : "none";
+            document.querySelector("#username").value = user.username;
+            document.querySelector("#email").value = user.email;
+        }
+
+        document.querySelector(".btn-create").addEventListener("click", createApiKey, { once: true });
+        document.querySelector(".btn-edit").addEventListener("click", editUserData);
+        document.querySelector(".btn-logout").addEventListener("click", logout);
+    </script>
+</body>
+
+</html>
