@@ -35,5 +35,6 @@ app
   .put("/api/books/update/:isbn", bookController.update)
   .delete("/api/books/delete/:isbn", bookController.delete)
   .get("/api/user/data", userController.getUserData)
+  .delete("/api/user/delete/:userId", userController.deleteUserAccount)
   .all("*", bookController.pageNotFound)
   .listen(port, (): void => console.log(`Server is running on port: ${port}`));

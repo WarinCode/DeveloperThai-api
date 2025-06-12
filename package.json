@@ -4,10 +4,7 @@
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
-    "copy-data": "copyfiles -u 2 src/data/books.json build/data/",
-    "build": "npx tsc && npm run copy-data",
-    "dev": "tsx --watch src/server.ts",
-    "start": "node build/server.js"
+    "dev": "tsx --watch src/server.ts"
   },
   "keywords": [],
   "author": "",

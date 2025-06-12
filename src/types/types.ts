@@ -14,3 +14,7 @@ export interface QueryParams {
 
 export type ReqBody = BookModel;
 export type ResBody = BookModel;
+
+export interface UserParams {
+    userId: string;
+}

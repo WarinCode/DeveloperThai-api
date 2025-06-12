@@ -1,9 +1,10 @@
 import { ZodError } from "zod";
 import { Response } from "express";
-import path from "path"
+import path from "path";
+import bcrypt from "bcrypt";
 import { fileURLToPath } from 'url';
 import Reader from "./classes/Reader.js";
-import { Users, UserModel } from "../types/models/user.js";
+import { Users, UserModel, UserLogin } from "../types/models/user.js";
 
 export const responseError = (res: Response, e: unknown | Error, statusCode?: number) => {
   if (e instanceof ZodError) {
@@ -89,6 +90,22 @@ export const getUserbyId = async (userId: string): Promise<UserModel | null> => 
 
   for (const user of users) {
     if (userId === user.userId) {
+      return user;
+    }
+  }
+
+  return null;
+}
+
+export const getUserbyUsernameAndPassword = async (userParam: UserLogin): Promise<UserModel | null> => {
+  const users: Users | null = await Reader.readAllData<Users>("users.json");
+
+  if (!users) {
+    throw new Error("ไม่สามารถอ่านข้อมูล users ได้!");
+  }
+
+  for (const user of users) {
+    if ((userParam.username === user.username || userParam.email === user.email) && await bcrypt.compare(userParam.password, user.password)) {
       return user;
     }
   }

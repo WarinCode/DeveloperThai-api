@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
+    <link rel="stylesheet" href="../style/style.css">
 </head>
 
 <body>
@@ -14,25 +15,25 @@
     <form>
         <div>
             <label for="username">
-                <span>Username: </span>
+                <span>ชื่อผู้ใช้งาน: </span>
                 <input type="text" id="username" name="username" required>
             </label>
         </div>
         <div>
             <label for="email">
-                <span>Email: </span>
+                <span>อีเมล: </span>
                 <input type="email" id="email" name="email" required>
             </label>
         </div>
         <div>
             <label for="password">
-                <span>Password: </span>
+                <span>รหัสผ่าน: </span>
                 <input type="password" id="password" name="password" required>
             </label>
         </div>
         <div>
             <label for="confirm-password">
-                <span>Confirm Password: </span>
+                <span>ยืนยันรหัสผ่าน: </span>
                 <input type="password" id="confirm-password" name="confirm-password" required>
             </label>
         </div>
@@ -40,7 +41,7 @@
     </form>
 
     <div style="margin-top: 20px;">
-        <a href="http://localhost:3000/sign-in.html">ไปที่หน้า login</a>
+        <a href="http://localhost:3000/pages/sign-in.html">ไปที่หน้า login</a>
     </div>
 
     <script type="module">
@@ -54,7 +55,7 @@
 
             try {
                 if (password === confirmPaasword) {
-                    const data = { username, email, password, userId: "" };
+                    const data = { username, email, password, userId: undefined };
 
                     const response = await fetch("http://localhost:3000/sign-up", {
                         method: "POST",
@@ -64,22 +65,24 @@
                         body: JSON.stringify(data)
                     });
                     const result = await response.json();
-                    console.log(result);
+                    // console.log(result);
 
                     if (response.status === 201) {
-                        localStorage.setItem("userId", result.userId);
-                        location.href = "http://localhost:3000/successfully.html";
+                        location.href = "http://localhost:3000/pages/successfully.html";
                     }
 
                     throw new Error(result ? result.message : "เกิดข้อผิดพลาดบางอย่างเกิดขึ้น!");
                 } else {
+                    document.querySelector("#password").value = "";
+                    document.querySelector("#confirm-password").value = "";
                     throw new Error("รหัสผ่านไม่ตรงกัน!");
                 }
             } catch (e) {
-                setTimeout(() => alert(e?.message), 1000);
+                alert(e?.message);
             }
         });
     </script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
 </body>
 
 </html>

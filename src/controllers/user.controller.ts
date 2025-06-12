@@ -5,12 +5,12 @@ import UserSchema from "../types/schemas/user.js";
 import Writer from "../utils/classes/Writer.js";
 import Reader from "../utils/classes/Reader.js";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
-import { EnvironmentVariables } from "../types/types.js";
-import { responseError, generateUserId, isUserExists, getUserbyId } from "../utils/index.js";
-import { UserModel, Users } from "../types/models/user.js";
+import { EnvironmentVariables, UserParams } from "../types/types.js";
+import { responseError, generateUserId, isUserExists, getUserbyUsernameAndPassword, getUserbyId } from "../utils/index.js";
+import { UserModel, Users, UserLogin } from "../types/models/user.js";
 
 export default class UserController {
-    public async signIn({ body, headers: { authorization } }: Request<any, UserModel, UserModel>, res: Response): Promise<void> {
+    public async signIn({ body, headers: { authorization } }: Request<any, UserLogin, UserLogin>, res: Response): Promise<void> {
         if (authorization) {
             const result: boolean = await AuthMiddleware.isAuthorized(authorization);
 
@@ -21,14 +21,14 @@ export default class UserController {
         }
 
         const secretKey: string = (<EnvironmentVariables>process.env).SECRET_KEY;
-        const validateUser: UserModel = body;
-
+        const validateUser: UserLogin = body;
+        console.log(validateUser)
         try {
-            if (!validateUser?.userId) {
-                throw new Error("id ของผู้ใช้งานไม่ถูกต้อง!");
-            }
+            const user: UserModel | null = await getUserbyUsernameAndPassword(validateUser);
 
-            const user: UserModel = <UserModel>await getUserbyId(validateUser.userId);
+            if (!user) {
+                throw new Error("login ล้มเหลว ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง");
+            }
 
             if (await bcrypt.compare(validateUser.password, user.password)) {
                 const token: string = jwt.sign(user, secretKey, { algorithm: "HS512" });
@@ -49,8 +49,7 @@ export default class UserController {
             UserSchema.parse(userData);
 
             const hashPassword: string = await bcrypt.hash(userData.password, 10);
-            const id: string = await generateUserId();
-            userData.userId = id;
+            userData.userId = await generateUserId();
             userData.password = hashPassword;
 
             if (await isUserExists(userData)) {
@@ -64,18 +63,43 @@ export default class UserController {
             users.push(userData);
             await Writer.writeFile(JSON.stringify(users, null, 4), "users.json");
 
-            res.status(201).type("json").json({ message: "สมัครบัญชีสำเร็จแล้ว", userId: id });
+            res.status(201).type("json").json({ message: "สมัครบัญชีสำเร็จแล้ว" });
         } catch (e: unknown) {
             responseError(res, e);
         }
     }
 
-    public async getUserData({ headers: { authorization } }: Request, res: Response): Promise<void> {
+    public getUserData({ headers: { authorization } }: Request, res: Response): void {
         try {
             const token: string = (<string>authorization).replace("Bearer ", "");
             const decoded: UserModel & JwtPayload = <UserModel & JwtPayload>jwt.decode(token);
             res.type("json").status(200).json(decoded);
-        } catch(e: unknown) {
+        } catch (e: unknown) {
+            responseError(res, e);
+        }
+    }
+
+    public async deleteUserAccount({ headers: { authorization }, params: { userId } }: Request<UserParams>, res: Response): Promise<void> {
+        try {
+            if (authorization) {
+                const result: boolean = await AuthMiddleware.isAuthorized(authorization);
+
+                if (result) {
+                    const user: UserModel | null = await getUserbyId(userId);
+
+                    if (user) {
+                        const users: Users = <Users>await Reader.readAllData<Users>("users.json");
+                        const filteredUsers: Users = users.filter((u: UserModel): boolean => u.userId !== userId);
+                        await Writer.writeFile(JSON.stringify(filteredUsers, null, 4), "users.json");
+
+                        res.type("json").status(200).json({ message: "ลบบัญชีผู้ใช้งานสำเร็จ" });
+                        return;
+                    }
+                }
+            }
+
+            throw new Error("เกิดข้อผิดพลาดลางอย่างเกิดขึ้น!");
+        } catch (e: unknown) {
             responseError(res, e);
         }
     }
