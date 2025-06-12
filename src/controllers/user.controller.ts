@@ -5,9 +5,10 @@ import UserSchema from "../types/schemas/user.js";
 import Writer from "../utils/classes/Writer.js";
 import Reader from "../utils/classes/Reader.js";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
-import { EnvironmentVariables, UserParams } from "../types/types.js";
+import { UserParams, EnvironmentVariables } from "../types/types.js";
 import { responseError, generateUserId, isUserExists, getUserbyUsernameAndPassword, getUserbyId } from "../utils/index.js";
 import { UserModel, Users, UserLogin } from "../types/models/user.js";
+import * as UserPropertySchema from "../types/schemas/user.js";
 
 export default class UserController {
     public async signIn({ body, headers: { authorization } }: Request<any, UserLogin, UserLogin>, res: Response): Promise<void> {
@@ -22,7 +23,7 @@ export default class UserController {
 
         const secretKey: string = (<EnvironmentVariables>process.env).SECRET_KEY;
         const validateUser: UserLogin = body;
-        console.log(validateUser)
+
         try {
             const user: UserModel | null = await getUserbyUsernameAndPassword(validateUser);
 
@@ -102,5 +103,28 @@ export default class UserController {
         } catch (e: unknown) {
             responseError(res, e);
         }
+    }
+
+    public async updateUser(req: Request<UserParams>, res: Response): Promise<void> {
+        try {
+            res.send("ok");
+        } catch (e: unknown) {
+            responseError(res, e);
+        }
+    }
+
+    public async updatePassword(req: Request<UserParams>, res: Response): Promise<void> {
+        try {
+            res.send("ok");
+        } catch (e: unknown) {
+            responseError(res, e);
+        }
+    }
+
+    public pageNotFound(
+        req: Request,
+        res: Response
+    ): void {
+        responseError(res, new Error("ไม่พบหน้าเพจที่เรียกหา!"), 404);
     }
 }

@@ -1,10 +1,11 @@
 import { BookModel } from "./models/book.js";
 
 export interface EnvironmentVariables extends NodeJS.ProcessEnv {
+    readonly PORT: string;
     readonly SECRET_KEY: string;
 }
 
-export interface Params {
+export interface BookParams {
     isbn: string;
 }
 

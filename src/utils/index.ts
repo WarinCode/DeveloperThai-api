@@ -22,17 +22,21 @@ export const responseError = (res: Response, e: unknown | Error, statusCode?: nu
 
 export const getRootPath = (): string => {
   const file: string = fileURLToPath(import.meta.url);
-  const dirname: string = path.dirname(file).replace("\\src\\utils", "");
+  const dirname: string = path.dirname(file).includes("src") ? path.dirname(file).replace("\\src\\utils", "") : path.dirname(file).replace("\\build\\utils", "");
   return dirname;
-}
+};
 
-export const getDataPath = (filename: string = "books.json"): string => {
-  return path.join(getRootPath(), "src", "data", filename);
-}
+export const getDataPath = (filename = "books.json"): string => {
+  if (getRootPath().includes("src")) {
+    return path.join(getRootPath(), "src", "data", filename);
+  }
+
+  return path.join(getRootPath(), "build", "data", filename);
+};
 
 export const getStaticPath = (): string => {
   return path.join(getRootPath(), "public");
-}
+};
 
 export const testing = async (cb: () => void | Promise<void>, isRun: true | false = true) => {
   if (!isRun) return;

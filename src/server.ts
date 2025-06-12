@@ -7,11 +7,12 @@ import BookController from "./controllers/book.controller.js";
 import UserController from "./controllers/user.controller.js";
 import AuthMiddleware from "./middlewares/AuthMiddleware.js";
 import { getStaticPath } from "./utils/index.js";
+import { EnvironmentVariables } from "./types/types.js";
 
 const app: Express = express();
 
 configDotenv(dotenvOptions);
-const port: number = 3000;
+const port: number = parseInt((<EnvironmentVariables>process.env).PORT);
 const bookController: BookController = new BookController();
 const userController: UserController = new UserController();
 
@@ -34,7 +35,16 @@ app
   .post("/api/books/create", bookController.create)
   .put("/api/books/update/:isbn", bookController.update)
   .delete("/api/books/delete/:isbn", bookController.delete)
+  .patch("/api/books/update/:isbn/bookname", bookController.updateBookName)
+  .patch("/api/books/update/:isbn/isbn", bookController.updateIsbn)
+  .patch("/api/books/update/:isbn/image", bookController.updateImage)
+  .patch("/api/books/update/:isbn/author", bookController.updateAuthor)
+  .patch("/api/books/update/:isbn/price", bookController.updatePrice)
+  .patch("/api/books/update/:isbn/page-count", bookController.updatePageCount)
+  .patch("/api/books/update/:isbn/table-of-contents", bookController.updateTableofContents)
   .get("/api/user/data", userController.getUserData)
+  .put("/api/user/update/:userId", userController.updateUser)
+  .patch("/api/user/update/:userId/password", userController.updatePassword)
   .delete("/api/user/delete/:userId", userController.deleteUserAccount)
-  .all("*", bookController.pageNotFound)
+  .all("*", userController.pageNotFound)
   .listen(port, (): void => console.log(`Server is running on port: ${port}`));

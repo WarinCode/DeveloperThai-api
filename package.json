@@ -4,7 +4,10 @@
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
-    "dev": "tsx --watch src/server.ts"
+    "copy": "copyfiles -u 2 src/data/*.json build/data/",
+    "build": "npx tsc && npm run copy",
+    "dev": "tsx --watch src/server.ts",
+    "start": "node build/server.js"
   },
   "keywords": [],
   "author": "",
