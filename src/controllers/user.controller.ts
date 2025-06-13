@@ -6,10 +6,12 @@ import DataWriter from "../utils/classes/DataWriter.js";
 import DataReader from "../utils/classes/DataReader.js";
 import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 import { UserParams, EnvironmentVariables } from "../types/types.js";
-import { responseError, generateUserId, isUserExists, getUserbyUsernameAndPassword, getToken } from "../utils/index.js";
+import { responseError, generateUserId, isUserExists, getUserbyUsernameAndPassword, getToken, generateApiKey } from "../utils/index.js";
 import { UserModel, Users, UserLogin } from "../types/models/user.js";
 import * as UserPropertySchema from "../types/schemas/user.js";
 import HttpResponseError from "../error/HttpResponseError.js";
+import { UserApiKey, UserApiKeys } from "../types/models/userApiKey.js";
+import FileNotFoundError from "../error/FileNotFoundError.js";
 
 export default class UserController {
     public async signIn({ body, headers: { authorization } }: Request<any, UserLogin, UserLogin>, res: Response): Promise<void> {
@@ -40,8 +42,8 @@ export default class UserController {
         }
     }
 
-    public async signUp({ body }: Request<any, UserModel, UserModel>, res: Response): Promise<void> {
-        const userData: UserModel = body;
+    public async signUp({ body }: Request<any, UserLogin, UserLogin>, res: Response): Promise<void> {
+        const userData: UserModel = { ...body, userId: "" };
 
         try {
             UserSchema.parse(userData);
@@ -168,9 +170,36 @@ export default class UserController {
         }
     }
 
-    public async createApiKey(req: Request, res: Response): Promise<void> {
+    public async createApiKey({ headers: { authorization } }: Request, res: Response): Promise<void> {
         try {
-            res.send("dfgtd");
+            if (!AuthMiddleware.isAuthorized(authorization)) {
+                throw new HttpResponseError("ผู้ใช้งานยืนยันตัวตนไม่ถูกต้อง!", 403);
+            }
+
+            const token: string = getToken(authorization);
+            const user: UserModel = <UserModel>jwt.decode(token);
+            const apiKey: string = await generateApiKey();
+            const currentDate = new Date();
+            const expiryDate = new Date();
+            expiryDate.setDate(currentDate.getDate() + 7);
+
+            const users: UserApiKeys | null = await DataReader.readAllData<UserApiKeys>("api-keys.json");
+            if (!users) {
+                throw new FileNotFoundError("ไม่สามารถเปิดอ่านไฟล์ข้อมูลได้!", "api-keys.json");
+            }
+
+            const data: UserApiKey = { 
+                username: user.username,
+                userId: user.userId,
+                key: apiKey,
+                isActiveKey: true,
+                createdAt: currentDate,
+                expiresIn: expiryDate
+            }
+            users.push(data);
+            await DataWriter.writeFile(JSON.stringify(users, null, 4), "api-keys.json");
+
+            res.type("json").status(201).json({ message: "สร้าง key สำเร็จ", apiKey });
         } catch (e: unknown) {
             responseError(res, e);
         }

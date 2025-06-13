@@ -13,12 +13,11 @@ export default class BookController {
     res.send("Hello World!");
   }
 
-  public async getBooks(
-    req: Request,
-    res: Response
-  ): Promise<void> {
+  public async getBooks(req: Request, res: Response): Promise<void> {
     try {
-      const books: Books | null = await DataReader.readAllData<Books>();
+      const books: Books | null = await DataReader.readAllData<Books>(
+        "books.json"
+      );
 
       if (!books) {
         throw new HttpResponseError("ไม่มีรายการข้อมูลหนังสือใดๆ!");
@@ -53,14 +52,19 @@ export default class BookController {
     res: Response
   ): Promise<void> {
     try {
-      const books: Books | null = await DataReader.readAllData<Books>();
+      const books: Books | null = await DataReader.readAllData<Books>(
+        "books.json"
+      );
 
       if (books === null || !keyword) {
         throw new HttpResponseError("ไม่มีรายการข้อมูลหนังสือใดๆ!");
       }
 
       const results: Books = books.filter((book: BookModel): boolean =>
-        book.bookName.trim().toLowerCase().includes(keyword.trim().toLowerCase())
+        book.bookName
+          .trim()
+          .toLowerCase()
+          .includes(keyword.trim().toLowerCase())
       );
 
       if (!results.length) {
@@ -78,10 +82,14 @@ export default class BookController {
     res: Response
   ) {
     try {
-      const books: Books | null = await DataReader.readAllData<Books>();
+      const books: Books | null = await DataReader.readAllData<Books>(
+        "books.json"
+      );
 
       if (!books) {
-        throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+        throw new HttpResponseError(
+          "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+        );
       }
 
       BookSchema.parse(body);
@@ -92,11 +100,13 @@ export default class BookController {
       }
 
       if (!BookValidator.checkIsbnLength(body.isbn)) {
-        throw new HttpResponseError("ความยาวของเลข isbn จะต้องมีความยาว 13 หลักเท่านั้น!");
+        throw new HttpResponseError(
+          "ความยาวของเลข isbn จะต้องมีความยาว 13 หลักเท่านั้น!"
+        );
       }
 
       books.push(body);
-      await DataWriter.writeFile(JSON.stringify(books, null, 4));
+      await DataWriter.writeFile(JSON.stringify(books, null, 4), "books.json");
 
       res.status(201).json({ message: "เพิ่มหนังสือใหม่สำเร็จ" });
     } catch (e: unknown) {
@@ -109,10 +119,14 @@ export default class BookController {
     res: Response
   ) {
     try {
-      const books: Books | null = await DataReader.readAllData<Books>();
+      const books: Books | null = await DataReader.readAllData<Books>(
+        "books.json"
+      );
 
       if (!books) {
-        throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+        throw new HttpResponseError(
+          "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+        );
       }
 
       BookSchema.parse(body);
@@ -126,7 +140,10 @@ export default class BookController {
           return book;
         });
 
-        await DataWriter.writeFile(JSON.stringify(filteredBooks, null, 4));
+        await DataWriter.writeFile(
+          JSON.stringify(filteredBooks, null, 4),
+          "books.json"
+        );
         res.status(200).json({ message: "แก้ไขข้อมูลหนังสือสำเร็จ" });
         return;
       }
@@ -142,10 +159,14 @@ export default class BookController {
     res: Response
   ) {
     try {
-      const books: Books | null = await DataReader.readAllData<Books>();
+      const books: Books | null = await DataReader.readAllData<Books>(
+        "books.json"
+      );
 
       if (!books) {
-        throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+        throw new HttpResponseError(
+          "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+        );
       }
 
       if (await BookValidator.isIsbnExists(parseInt(isbn))) {
@@ -153,7 +174,10 @@ export default class BookController {
           (book: BookModel) => book.isbn !== parseInt(isbn)
         );
 
-        await DataWriter.writeFile(JSON.stringify(filteredBooks, null, 4));
+        await DataWriter.writeFile(
+          JSON.stringify(filteredBooks, null, 4),
+          "books.json"
+        );
         res.status(200).json({ message: "ลบหนังสือใหม่สำเร็จ" });
         return;
       }
@@ -164,17 +188,31 @@ export default class BookController {
     }
   }
 
-  public async updateBookName({ params, body: { bookName } }: Request<BookParams, Pick<BookModel, "bookName">, Pick<BookModel, "bookName">>, res: Response): Promise<void> {
+  public async updateBookName(
+    {
+      params,
+      body: { bookName },
+    }: Request<
+      BookParams,
+      Pick<BookModel, "bookName">,
+      Pick<BookModel, "bookName">
+    >,
+    res: Response
+  ): Promise<void> {
     const isbn: number = parseInt(params.isbn);
 
     try {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.bookName.parse(bookName);
 
-        const books: Books | null = await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>(
+          "books.json"
+        );
 
         if (!books) {
-          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+          throw new HttpResponseError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          );
         }
 
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
@@ -185,10 +223,16 @@ export default class BookController {
           return book;
         });
 
-        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
-        res.type("json").status(200).json({ message: "แก้ไขชื่อหนังสือเรียบร้อย" });
+        await DataWriter.writeFile(
+          JSON.stringify(updatedBooks, null, 4),
+          "books.json"
+        );
+        res
+          .type("json")
+          .status(200)
+          .json({ message: "แก้ไขชื่อหนังสือเรียบร้อย" });
         return;
-      };
+      }
 
       throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
@@ -196,17 +240,31 @@ export default class BookController {
     }
   }
 
-  public async updateImage({ params, body: { imageUrl } }: Request<BookParams, Pick<BookModel, "imageUrl">, Pick<BookModel, "imageUrl">>, res: Response): Promise<void> {
+  public async updateImage(
+    {
+      params,
+      body: { imageUrl },
+    }: Request<
+      BookParams,
+      Pick<BookModel, "imageUrl">,
+      Pick<BookModel, "imageUrl">
+    >,
+    res: Response
+  ): Promise<void> {
     const isbn: number = parseInt(params.isbn);
 
     try {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.imageUrl.parse(imageUrl);
 
-        const books: Books | null = await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>(
+          "books.json"
+        );
 
         if (!books) {
-          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+          throw new HttpResponseError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          );
         }
 
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
@@ -217,10 +275,16 @@ export default class BookController {
           return book;
         });
 
-        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
-        res.type("json").status(200).json({ message: "แก้ไขรูปภาพหนังสือเรียบร้อย" });
+        await DataWriter.writeFile(
+          JSON.stringify(updatedBooks, null, 4),
+          "books.json"
+        );
+        res
+          .type("json")
+          .status(200)
+          .json({ message: "แก้ไขรูปภาพหนังสือเรียบร้อย" });
         return;
-      };
+      }
 
       throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
@@ -228,17 +292,31 @@ export default class BookController {
     }
   }
 
-  public async updateAuthor({ params, body: { author } }: Request<BookParams, Pick<BookModel, "author">, Pick<BookModel, "author">>, res: Response): Promise<void> {
+  public async updateAuthor(
+    {
+      params,
+      body: { author },
+    }: Request<
+      BookParams,
+      Pick<BookModel, "author">,
+      Pick<BookModel, "author">
+    >,
+    res: Response
+  ): Promise<void> {
     const isbn: number = parseInt(params.isbn);
 
     try {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.author.parse(author);
 
-        const books: Books | null = await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>(
+          "books.json"
+        );
 
         if (!books) {
-          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+          throw new HttpResponseError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          );
         }
 
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
@@ -249,10 +327,16 @@ export default class BookController {
           return book;
         });
 
-        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
-        res.type("json").status(200).json({ message: "แก้ไขชื่อผู้แต่งเรียบร้อย" });
+        await DataWriter.writeFile(
+          JSON.stringify(updatedBooks, null, 4),
+          "books.json"
+        );
+        res
+          .type("json")
+          .status(200)
+          .json({ message: "แก้ไขชื่อผู้แต่งเรียบร้อย" });
         return;
-      };
+      }
 
       throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
@@ -260,7 +344,13 @@ export default class BookController {
     }
   }
 
-  public async updateIsbn({ params, body }: Request<BookParams, Pick<BookModel, "isbn">, Pick<BookModel, "isbn">>, res: Response): Promise<void> {
+  public async updateIsbn(
+    {
+      params,
+      body,
+    }: Request<BookParams, Pick<BookModel, "isbn">, Pick<BookModel, "isbn">>,
+    res: Response
+  ): Promise<void> {
     const oldIsbn: number = parseInt(params.isbn);
     const newIsbn: number = body.isbn;
 
@@ -268,10 +358,14 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(oldIsbn)) {
         BookPropertySchema.isbn.parse(newIsbn);
 
-        const books: Books | null = await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>(
+          "books.json"
+        );
 
         if (!books) {
-          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+          throw new HttpResponseError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          );
         }
 
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
@@ -282,10 +376,16 @@ export default class BookController {
           return book;
         });
 
-        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
-        res.type("json").status(200).json({ message: "แก้ไขหมายเลข isbn เรียบร้อย" });
+        await DataWriter.writeFile(
+          JSON.stringify(updatedBooks, null, 4),
+          "books.json"
+        );
+        res
+          .type("json")
+          .status(200)
+          .json({ message: "แก้ไขหมายเลข isbn เรียบร้อย" });
         return;
-      };
+      }
 
       throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
@@ -293,17 +393,27 @@ export default class BookController {
     }
   }
 
-  public async updatePrice({ params, body: { price } }: Request<BookParams, Pick<BookModel, "price">, Pick<BookModel, "price">>, res: Response): Promise<void> {
+  public async updatePrice(
+    {
+      params,
+      body: { price },
+    }: Request<BookParams, Pick<BookModel, "price">, Pick<BookModel, "price">>,
+    res: Response
+  ): Promise<void> {
     const isbn: number = parseInt(params.isbn);
 
     try {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.price.parse(price);
 
-        const books: Books | null = await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>(
+          "books.json"
+        );
 
         if (!books) {
-          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+          throw new HttpResponseError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          );
         }
 
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
@@ -314,10 +424,16 @@ export default class BookController {
           return book;
         });
 
-        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
-        res.type("json").status(200).json({ message: "แก้ไขราคาหนังสือเรียบร้อย" });
+        await DataWriter.writeFile(
+          JSON.stringify(updatedBooks, null, 4),
+          "books.json"
+        );
+        res
+          .type("json")
+          .status(200)
+          .json({ message: "แก้ไขราคาหนังสือเรียบร้อย" });
         return;
-      };
+      }
 
       throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
@@ -325,17 +441,31 @@ export default class BookController {
     }
   }
 
-  public async updatePageCount({ params, body: { pageCount } }: Request<BookParams, Pick<BookModel, "pageCount">, Pick<BookModel, "pageCount">>, res: Response): Promise<void> {
+  public async updatePageCount(
+    {
+      params,
+      body: { pageCount },
+    }: Request<
+      BookParams,
+      Pick<BookModel, "pageCount">,
+      Pick<BookModel, "pageCount">
+    >,
+    res: Response
+  ): Promise<void> {
     const isbn: number = parseInt(params.isbn);
 
     try {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.pageCount.parse(pageCount);
 
-        const books: Books | null = await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>(
+          "books.json"
+        );
 
         if (!books) {
-          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+          throw new HttpResponseError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          );
         }
 
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
@@ -346,10 +476,16 @@ export default class BookController {
           return book;
         });
 
-        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
-        res.type("json").status(200).json({ message: "แก้ไขจำนวนหน้าหนังสือเรียบร้อย" });
+        await DataWriter.writeFile(
+          JSON.stringify(updatedBooks, null, 4),
+          "books.json"
+        );
+        res
+          .type("json")
+          .status(200)
+          .json({ message: "แก้ไขจำนวนหน้าหนังสือเรียบร้อย" });
         return;
-      };
+      }
 
       throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
@@ -357,17 +493,31 @@ export default class BookController {
     }
   }
 
-  public async updateTableofContents({ params, body: { tableofContents } }: Request<BookParams, Pick<BookModel, "tableofContents">, Pick<BookModel, "tableofContents">>, res: Response): Promise<void> {
+  public async updateTableofContents(
+    {
+      params,
+      body: { tableofContents },
+    }: Request<
+      BookParams,
+      Pick<BookModel, "tableofContents">,
+      Pick<BookModel, "tableofContents">
+    >,
+    res: Response
+  ): Promise<void> {
     const isbn: number = parseInt(params.isbn);
 
     try {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.tableofContents.parse(tableofContents);
 
-        const books: Books | null = await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>(
+          "books.json"
+        );
 
         if (!books) {
-          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+          throw new HttpResponseError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          );
         }
 
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
@@ -378,10 +528,16 @@ export default class BookController {
           return book;
         });
 
-        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
-        res.type("json").status(200).json({ message: "แก้ไขสารบัญหนังสือเรียบร้อย" });
+        await DataWriter.writeFile(
+          JSON.stringify(updatedBooks, null, 4),
+          "books.json"
+        );
+        res
+          .type("json")
+          .status(200)
+          .json({ message: "แก้ไขสารบัญหนังสือเรียบร้อย" });
         return;
-      };
+      }
 
       throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {

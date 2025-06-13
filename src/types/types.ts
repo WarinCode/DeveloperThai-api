@@ -20,3 +20,5 @@ export interface QueryParams {
 export interface CustomHeaders extends IncomingHttpHeaders {
     readonly "developerthai-api-key": string | undefined;
 }
+
+export type DataFiles = "books.json" | "users.json" | "api-keys.json";

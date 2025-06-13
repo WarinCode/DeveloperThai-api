@@ -2,11 +2,16 @@ import fs from "fs/promises";
 import { BookModel, Books } from "../../types/models/book.js";
 import FileManager from "./FileManager.js";
 import { Users } from "../../types/models/user.js";
+import { DataFiles } from "../../types/types.js";
+import { UserApiKeys } from "../../types/models/userApiKey.js";
+import FileNotFoundError from "../../error/FileNotFoundError.js";
 
 export default class DataReader extends FileManager {
-  public static async readAllData<T extends Books | Users>(filename: string = "books.json"): Promise<T | null> {
+  public static async readAllData<T extends Books | Users | UserApiKeys>(
+    filename: DataFiles
+  ): Promise<T | null> {
     try {
-      if (await this.accessible()) {
+      if (await this.accessible(filename)) {
         const text: string = await fs.readFile(this.getPath(filename), {
           encoding: "utf8",
         });
@@ -14,9 +19,12 @@ export default class DataReader extends FileManager {
         return data;
       }
 
-      throw new Error("ไม่สามารถเปิดอ่านไฟล์ข้อมูลได้!");
-    } catch (e: any) {
-      console.error(e);
+      throw new FileNotFoundError("ไม่สามารถเปิดอ่านไฟล์ข้อมูลได้!", filename);
+    } catch (e: unknown) {
+      if (e instanceof FileNotFoundError) {
+        console.error(e.getTemplateMessage());
+      }
+
       return null;
     }
   }
@@ -25,9 +33,9 @@ export default class DataReader extends FileManager {
     isbn: number
   ): Promise<BookModel | null | undefined> {
     try {
-      const books: Books | null = await this.readAllData<Books>();
+      const books: Books | null = await this.readAllData<Books>("books.json");
 
-      if (books === null || books.length === 0) {
+      if (!books || books.length === 0) {
         return null;
       }
 

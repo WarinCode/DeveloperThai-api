@@ -6,8 +6,8 @@ export default class BookValidator extends FileManager {
     private static keys: string[] = ["bookName", "imageUrl", "author", "isbn", "price", "pageCount", "tableofContents"];
 
     public static async isIsbnExists(isbn: number): Promise<boolean> {
-        if (await this.accessible()) {
-            const books: Books = <Books>(await DataReader.readAllData());
+        if (await this.accessible("books.json")) {
+            const books: Books = <Books>await DataReader.readAllData("books.json");
 
             for (const book of books) {
                 if (book.isbn === isbn) {

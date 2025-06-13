@@ -55,7 +55,7 @@
 
             try {
                 if (password === confirmPaasword) {
-                    const data = { username, email, password, userId: undefined };
+                    const data = { username, email, password };
 
                     const response = await fetch("http://localhost:3000/sign-up", {
                         method: "POST",

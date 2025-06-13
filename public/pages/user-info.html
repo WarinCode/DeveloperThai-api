@@ -120,12 +120,15 @@
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                        "DeveloperThai-Api-Key": "dfgdgdf"
+                        Authorization: `Bearer ${token}`
                     }
                 })
-                const result = await response.text();
-                console.log(alert(result));
+                const { message, apiKey } = await response.text();
+                
+                if (response.status === 201) {
+                    document.querySelector(".show-key").textContent = apiKey;
+                    alert(message);
+                }
             } catch (e) {
                 console.error(e);
                 alert(e?.message);
