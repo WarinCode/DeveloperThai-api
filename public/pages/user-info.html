@@ -28,7 +28,8 @@
         </div>
 
         <div style="margin-top: 20px;" class="btn-group">
-            <button class="btn-edit">แก้ไขข้อมูล</button>
+            <button class="btn-edit-user">แก้ไขข้อมูลผู้ใช้งาน</button>
+            <button class="btn-edit-password">เปลี่ยนรหัสผ่าน</button>
             <button class="btn-logout" style="margin-inline: 1rem;">ออกจากระบบ</button>
             <button class="btn-delete">ลบบัญชี</button>
         </div>
@@ -36,7 +37,7 @@
 
     <p class="error" style="display: none; color: red;">เกิดข้อผิดพลาดขึ้นไม่ามารถดึงข้อมูลผู้ใช้งานมาได้!</p>
 
-    <form style="margin-top: 40px; display: none;">
+    <form id="user-form" style="margin-top: 40px; display: none;">
         <div>
             <label for="username">
                 <span>ชื่อผู้ใช้งาน: </span>
@@ -50,6 +51,16 @@
             </label>
         </div>
         <button type="submit">แก้ไขข้อมูลผู้ใช้งาน</button>
+    </form>
+
+    <form id="password-form" style="margin-top: 40px; display: none;">
+        <div>
+            <label for="password">
+                <span>รหัสผ่านใหม่: </span>
+                <input type="password" id="password" name="password" required>
+            </label>
+        </div>
+        <button type="submit">เปลี่ยนรหัสผ่าน</button>
     </form>
 
     <script type="module">
@@ -114,18 +125,93 @@
             redirect();
         }
 
-        const editUserData = async () => {
-            const toggleDisplay = document.querySelector("form").style.display === "none";
-            document.querySelector("form").style.display = toggleDisplay ? "block" : "none";
+        const showUserForm = async () => {
+            const toggleDisplay = document.querySelector("#user-form").style.display === "none";
+            document.querySelector("#user-form").style.display = toggleDisplay ? "block" : "none";
             document.querySelector("#username").value = user.username;
             document.querySelector("#email").value = user.email;
         }
 
+        const showPasswordForm = async () => {
+            const toggleDisplay = document.querySelector("#password-form").style.display === "none";
+            document.querySelector("#password-form").style.display = toggleDisplay ? "block" : "none";
+            document.querySelector("#username").value = user.username;
+            document.querySelector("#email").value = user.email;
+        }
+
+        const updateUserData = async (e) => {
+            e.preventDefault();
+            const data = {
+                username: document.querySelector("#username").value.trim(),
+                email: document.querySelector("#email").value.trim(),
+                userId: user.userId
+            }
+            const token = localStorage.getItem("token");
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/users/update/${user.userId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                const { message, username, email, newToken } = await response.json();
+
+                if (response.status === 200) {
+                    localStorage.setItem("token", newToken);
+                    document.querySelector(".show-username").textContent = username;
+                    document.querySelector(".show-email").textContent = email;
+                    user.username = username;
+                    user.email = email;
+                    document.querySelector("#user-form").style.display = "none";
+                }
+
+                alert(message);
+            } catch (err) {
+                console.error(err);
+                alert(err?.message);
+            }
+        }
+
+        const updatePassword = async (e) => {
+            e.preventDefault();
+
+            const data = {
+                password: document.querySelector("#password").value.trim()
+            }
+            const token = localStorage.getItem("token");
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/users/update/${user.userId}/password`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                const { message, newToken } = await response.json();
+
+                if (response.status === 200) {
+                    localStorage.setItem("token", newToken);
+                    document.querySelector("#password").value = "";
+                    document.querySelector("#password-form").style.display = "none";
+                }
+
+                alert(message);
+            } catch (err) {
+                console.error(err);
+                alert(err?.message);
+            }
+        }
+
         const deleteUserAccount = async () => {
             const token = localStorage.getItem("token");
-            
+
             try {
-                const response = await fetch(`http://localhost:3000/api/user/delete/${user.userId}`, {
+                const response = await fetch(`http://localhost:3000/api/users/delete/${user.userId}`, {
                     method: "DELETE",
                     headers: {
                         "Content-Type": "application/json",
@@ -133,7 +219,7 @@
                     }
                 });
 
-                if (response.status === 200){
+                if (response.status === 200) {
                     alert("ลบบัญชีผู้ใช้งานสำเร็จ");
                     logout();
                 }
@@ -144,7 +230,10 @@
         }
 
         document.querySelector(".btn-create").addEventListener("click", createApiKey, { once: true });
-        document.querySelector(".btn-edit").addEventListener("click", editUserData);
+        document.querySelector(".btn-edit-user").addEventListener("click", showUserForm);
+        document.querySelector(".btn-edit-password").addEventListener("click", showPasswordForm);
+        document.querySelector("#user-form").addEventListener("submit", updateUserData);
+        document.querySelector("#password-form").addEventListener("submit", updatePassword);
         document.querySelector(".btn-logout").addEventListener("click", logout);
         document.querySelector(".btn-delete").addEventListener("click", deleteUserAccount);
     </script>

@@ -4,5 +4,11 @@
         "email": "root@gmail.com",
         "password": "$2b$10$K1fRw53rVXyY3cOnx2TVjO.4.aWMyon3SGZ9uBCmKbMBIAmPcp8my",
         "userId": "pLz9GQxc8TrFIBjlOt6quJJMYuV1Htcl5nagVyOi"
+    },
+    {
+        "username": "john",
+        "email": "john@gmail.com",
+        "password": "$2b$10$CmH5OnMia6IXYFZn5pGYJe02GdhmYrKUxjYchyktZ1XZxbPx4a26G",
+        "userId": "XzTxk8cZ0KbrTmQMr4FgA5t6AnzmAptLXuBXckd8"
     }
 ]

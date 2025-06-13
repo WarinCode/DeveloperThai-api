@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express"
 import jwt, { JwtPayload, VerifyErrors } from "jsonwebtoken";
-import { responseError } from "../utils/index.js";
+import { responseError, getToken } from "../utils/index.js";
 import { EnvironmentVariables } from "../types/types.js";
 import { UserModel } from "../types/models/user.js";
 
@@ -27,15 +27,15 @@ export default class AuthMiddleware {
         }
     }
 
-    public static async isAuthorized(authorization: string): Promise<boolean> {
+    public static isAuthorized(authorization: string | undefined): boolean {
         const secretKey: string = (<EnvironmentVariables>process.env).SECRET_KEY;
         let isVerifyError: boolean = false;
 
         if (!authorization || !authorization?.startsWith("Bearer")) {
-            isVerifyError = true;
+            return false;
         }
 
-        const token: string = authorization.replace("Bearer ", "");
+        const token: string = getToken(authorization);
         jwt.verify(token, secretKey, (err: VerifyErrors | null): void => {
             if (err instanceof jwt.JsonWebTokenError || err !== null) {
                 isVerifyError = true;

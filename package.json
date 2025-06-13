@@ -4,10 +4,7 @@
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
-    "copy": "copyfiles -u 2 src/data/*.json build/data/",
-    "build": "npx tsc && npm run copy",
-    "dev": "tsx --watch src/server.ts",
-    "start": "node build/server.js"
+    "dev": "tsx --watch src/server.ts"
   },
   "keywords": [],
   "author": "",
@@ -33,7 +30,6 @@
     "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
     "@types/node": "^22.9.1",
-    "copyfiles": "^2.4.1",
     "typescript": "^5.6.3"
   }
 }

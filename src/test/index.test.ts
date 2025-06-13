@@ -1,11 +1,11 @@
 import bcrypt from "bcrypt";
 import { getDataPath, getStaticPath, testing } from "../utils/index.js";
-import Reader from "../utils/classes/Reader.js";
+import DataReader from "../utils/classes/DataReader.js";
 import BookSchema from "../types/schemas/book.js";
 import { getRootPath, generateUserId } from "../utils/index.js";
 
 testing(async () => {
-    console.log(await Reader.readAllData());
+    console.log(await DataReader.readAllData());
 }, false);
 
 testing(() => {

@@ -1,5 +1,5 @@
 import FileManager from "./FileManager.js";
-import Reader from "./Reader.js";
+import DataReader from "./DataReader.js";
 import { BookModel, Books } from "../../types/models/book.js";
 
 export default class BookValidator extends FileManager {
@@ -7,7 +7,7 @@ export default class BookValidator extends FileManager {
 
     public static async isIsbnExists(isbn: number): Promise<boolean> {
         if (await this.accessible()) {
-            const books: Books = <Books>(await Reader.readAllData());
+            const books: Books = <Books>(await DataReader.readAllData());
 
             for (const book of books) {
                 if (book.isbn === isbn) {

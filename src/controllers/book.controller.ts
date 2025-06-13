@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import { responseError } from "../utils/index.js";
-import Reader from "../utils/classes/Reader.js";
-import Writer from "../utils/classes/Writer.js";
+import DataReader from "../utils/classes/DataReader.js";
+import DataWriter from "../utils/classes/DataWriter.js";
 import BookValidator from "../utils/classes/BookValidator.js";
 import { Books, BookModel } from "../types/models/book.js";
 import { BookParams, QueryParams, ReqBody, ResBody } from "../types/types.js";
 import BookSchema, * as BookPropertySchema from "../types/schemas/book.js";
-import { isBuiltin } from "node:module";
 
 export default class BookController {
   public sendHelloWorld(req: Request, res: Response): void {
@@ -18,7 +17,7 @@ export default class BookController {
     res: Response
   ): Promise<void> {
     try {
-      const books: Books | null = await Reader.readAllData<Books>();
+      const books: Books | null = await DataReader.readAllData<Books>();
 
       if (books === null) {
         throw new Error("ไม่มีรายการข้อมูลหนังสือใดๆ!");
@@ -34,7 +33,7 @@ export default class BookController {
     res: Response
   ): Promise<void> {
     try {
-      const book: BookModel | null | undefined = await Reader.readBookData(
+      const book: BookModel | null | undefined = await DataReader.readBookData(
         parseInt(params.isbn)
       );
 
@@ -53,7 +52,7 @@ export default class BookController {
     res: Response
   ): Promise<void> {
     try {
-      const books: Books | null = await Reader.readAllData<Books>();
+      const books: Books | null = await DataReader.readAllData<Books>();
 
       if (books === null || !keyword) {
         throw new Error("ไม่มีรายการข้อมูลหนังสือใดๆ!");
@@ -78,7 +77,7 @@ export default class BookController {
     res: Response
   ) {
     try {
-      const books: Books | null = await Reader.readAllData<Books>();
+      const books: Books | null = await DataReader.readAllData<Books>();
 
       if (books === null) {
         throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
@@ -96,7 +95,7 @@ export default class BookController {
       }
 
       books.push(body);
-      await Writer.writeFile(JSON.stringify(books, null, 4));
+      await DataWriter.writeFile(JSON.stringify(books, null, 4));
 
       res.status(201).json({ message: "เพิ่มหนังสือใหม่สำเร็จ" });
     } catch (e: unknown) {
@@ -109,7 +108,7 @@ export default class BookController {
     res: Response
   ) {
     try {
-      const books: Books | null = await Reader.readAllData<Books>();
+      const books: Books | null = await DataReader.readAllData<Books>();
 
       if (books === null) {
         throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
@@ -126,7 +125,7 @@ export default class BookController {
           return book;
         });
 
-        await Writer.writeFile(JSON.stringify(books2, null, 4));
+        await DataWriter.writeFile(JSON.stringify(books2, null, 4));
         res.status(200).json({ message: "แก้ไขข้อมูลหนังสือสำเร็จ" });
 
         return;
@@ -143,7 +142,7 @@ export default class BookController {
     res: Response
   ) {
     try {
-      const books: Books | null = await Reader.readAllData<Books>();
+      const books: Books | null = await DataReader.readAllData<Books>();
 
       if (books === null) {
         throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
@@ -154,7 +153,7 @@ export default class BookController {
           (book: BookModel) => book.isbn !== parseInt(isbn)
         );
 
-        await Writer.writeFile(JSON.stringify(books2, null, 4));
+        await DataWriter.writeFile(JSON.stringify(books2, null, 4));
         res.status(200).json({ message: "ลบหนังสือใหม่สำเร็จ" });
 
         return;
@@ -173,7 +172,7 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.bookName.parse(bookName);
 
-        const books: Books = <Books>await Reader.readAllData<Books>();
+        const books: Books = <Books>await DataReader.readAllData<Books>();
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.bookName = bookName;
@@ -182,7 +181,7 @@ export default class BookController {
           return book;
         });
 
-        await Writer.writeFile(JSON.stringify(updatedBooks, null, 4));
+        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
         res.type("json").status(200).json({ message: "แก้ไขชื่อหนังสือเรียบร้อย" });
         return;
       };
@@ -200,7 +199,7 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.imageUrl.parse(imageUrl);
 
-        const books: Books = <Books>await Reader.readAllData<Books>();
+        const books: Books = <Books>await DataReader.readAllData<Books>();
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.imageUrl = imageUrl;
@@ -209,7 +208,7 @@ export default class BookController {
           return book;
         });
 
-        await Writer.writeFile(JSON.stringify(updatedBooks, null, 4));
+        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
         res.type("json").status(200).json({ message: "แก้ไขรูปภาพหนังสือเรียบร้อย" });
         return;
       };
@@ -227,7 +226,7 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.author.parse(author);
 
-        const books: Books = <Books>await Reader.readAllData<Books>();
+        const books: Books = <Books>await DataReader.readAllData<Books>();
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.author = author;
@@ -236,7 +235,7 @@ export default class BookController {
           return book;
         });
 
-        await Writer.writeFile(JSON.stringify(updatedBooks, null, 4));
+        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
         res.type("json").status(200).json({ message: "แก้ไขชื่อผู้แต่งเรียบร้อย" });
         return;
       };
@@ -255,7 +254,7 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(oldIsbn)) {
         BookPropertySchema.isbn.parse(newIsbn);
 
-        const books: Books = <Books>await Reader.readAllData<Books>();
+        const books: Books = <Books>await DataReader.readAllData<Books>();
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === oldIsbn) {
             book.isbn = newIsbn;
@@ -264,7 +263,7 @@ export default class BookController {
           return book;
         });
 
-        await Writer.writeFile(JSON.stringify(updatedBooks, null, 4));
+        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
         res.type("json").status(200).json({ message: "แก้ไขหมายเลข isbn เรียบร้อย" });
         return;
       };
@@ -282,7 +281,7 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.price.parse(price);
 
-        const books: Books = <Books>await Reader.readAllData<Books>();
+        const books: Books = <Books>await DataReader.readAllData<Books>();
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.price = price;
@@ -291,7 +290,7 @@ export default class BookController {
           return book;
         });
 
-        await Writer.writeFile(JSON.stringify(updatedBooks, null, 4));
+        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
         res.type("json").status(200).json({ message: "แก้ไขราคาหนังสือเรียบร้อย" });
         return;
       };
@@ -309,7 +308,7 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.pageCount.parse(pageCount);
 
-        const books: Books = <Books>await Reader.readAllData<Books>();
+        const books: Books = <Books>await DataReader.readAllData<Books>();
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.pageCount = pageCount;
@@ -318,7 +317,7 @@ export default class BookController {
           return book;
         });
 
-        await Writer.writeFile(JSON.stringify(updatedBooks, null, 4));
+        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
         res.type("json").status(200).json({ message: "แก้ไขจำนวนหน้าหนังสือเรียบร้อย" });
         return;
       };
@@ -336,7 +335,7 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.tableofContents.parse(tableofContents);
 
-        const books: Books = <Books>await Reader.readAllData<Books>();
+        const books: Books = <Books>await DataReader.readAllData<Books>();
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.tableofContents = tableofContents;
@@ -345,7 +344,7 @@ export default class BookController {
           return book;
         });
 
-        await Writer.writeFile(JSON.stringify(updatedBooks, null, 4));
+        await DataWriter.writeFile(JSON.stringify(updatedBooks, null, 4));
         res.type("json").status(200).json({ message: "แก้ไขสารบัญหนังสือเรียบร้อย" });
         return;
       };

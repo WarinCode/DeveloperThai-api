@@ -24,7 +24,6 @@ app
   .use(express.static(getStaticPath()))
   .use(limiter)
   .use("/api/*", AuthMiddleware.authorization);
-
 app
   .get("/", bookController.sendHelloWorld)
   .post("/sign-in", userController.signIn)
@@ -43,8 +42,8 @@ app
   .patch("/api/books/update/:isbn/page-count", bookController.updatePageCount)
   .patch("/api/books/update/:isbn/table-of-contents", bookController.updateTableofContents)
   .get("/api/user/data", userController.getUserData)
-  .put("/api/user/update/:userId", userController.updateUser)
-  .patch("/api/user/update/:userId/password", userController.updatePassword)
-  .delete("/api/user/delete/:userId", userController.deleteUserAccount)
+  .put("/api/users/update/:userId", userController.updateUser)
+  .patch("/api/users/update/:userId/password", userController.updatePassword)
+  .delete("/api/users/delete/:userId", userController.deleteUserAccount)
   .all("*", userController.pageNotFound)
   .listen(port, (): void => console.log(`Server is running on port: ${port}`));

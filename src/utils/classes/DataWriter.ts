@@ -1,7 +1,7 @@
 import fs from "fs/promises";
 import FileManager from "./FileManager.js";
 
-export default class Writer extends FileManager {
+export default class DataWriter extends FileManager {
   public static async writeFile(data: string, filename: string = "books.json"): Promise<void> {
     try {
       if (await this.accessible()) {

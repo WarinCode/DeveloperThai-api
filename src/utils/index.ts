@@ -3,7 +3,7 @@ import { Response } from "express";
 import path from "path";
 import bcrypt from "bcrypt";
 import { fileURLToPath } from 'url';
-import Reader from "./classes/Reader.js";
+import DataReader from "./classes/DataReader.js";
 import { Users, UserModel, UserLogin } from "../types/models/user.js";
 
 export const responseError = (res: Response, e: unknown | Error, statusCode?: number) => {
@@ -22,16 +22,12 @@ export const responseError = (res: Response, e: unknown | Error, statusCode?: nu
 
 export const getRootPath = (): string => {
   const file: string = fileURLToPath(import.meta.url);
-  const dirname: string = path.dirname(file).includes("src") ? path.dirname(file).replace("\\src\\utils", "") : path.dirname(file).replace("\\build\\utils", "");
+  const dirname: string = path.dirname(file).replace("\\src\\utils", "");
   return dirname;
 };
 
 export const getDataPath = (filename = "books.json"): string => {
-  if (getRootPath().includes("src")) {
-    return path.join(getRootPath(), "src", "data", filename);
-  }
-
-  return path.join(getRootPath(), "build", "data", filename);
+  return path.join(getRootPath(), "src", "data", filename);
 };
 
 export const getStaticPath = (): string => {
@@ -51,9 +47,9 @@ export const testing = async (cb: () => void | Promise<void>, isRun: true | fals
 }
 
 export async function isUserExists(userId: string): Promise<boolean>;
-export async function isUserExists(userParam: UserModel): Promise<boolean>;
+export async function isUserExists(user: UserModel): Promise<boolean>;
 export async function isUserExists(param: string | UserModel): Promise<boolean> {
-  const users: Users | null = await Reader.readAllData<Users>("users.json");
+  const users: Users | null = await DataReader.readAllData<Users>("users.json");
 
   if (!users) {
     throw new Error("ไม่สามารถอ่านข้อมูล users ได้!");
@@ -62,12 +58,12 @@ export async function isUserExists(param: string | UserModel): Promise<boolean> 
   if (typeof param === "string") {
     return users.some((user: UserModel): boolean => user.userId === param);
   }
-
+  console.log(param);
   return users.some((user: UserModel): boolean => user.userId !== param.userId && (user.username === param.username || user.email === param.email));
 }
 
-export const generateUserId = async (length: number = 40): Promise<string> => {
-  let userId: string = "";
+export const generateId = (length: number): string => {
+  let id: string = "";
   const charsets: string[] = [
     ..."abcdefghijklmnopqrstuvwxyz",
     ..."ABCDEFGHIJKLMNOPQRSTUVWXYZ",
@@ -75,8 +71,14 @@ export const generateUserId = async (length: number = 40): Promise<string> => {
   ];
 
   for (let i: number = 0; i < length; i++) {
-    userId += charsets[Math.floor(Math.random() * charsets.length)];
+    id += charsets[Math.floor(Math.random() * charsets.length)];
   }
+
+  return id;
+}
+
+export const generateUserId = async (length: number = 40): Promise<string> => {
+  const userId: string = generateId(length);
 
   if (await isUserExists(userId)) {
     return generateUserId(length);
@@ -85,8 +87,13 @@ export const generateUserId = async (length: number = 40): Promise<string> => {
   return userId;
 }
 
+export const generateApiKey = async (length: number = 100): Promise<string> => {
+  const apiKey: string = generateId(length);
+  return apiKey;
+}
+
 export const getUserbyId = async (userId: string): Promise<UserModel | null> => {
-  const users: Users | null = await Reader.readAllData<Users>("users.json");
+  const users: Users | null = await DataReader.readAllData<Users>("users.json");
 
   if (!users) {
     throw new Error("ไม่สามารถอ่านข้อมูล users ได้!");
@@ -102,7 +109,7 @@ export const getUserbyId = async (userId: string): Promise<UserModel | null> => 
 }
 
 export const getUserbyUsernameAndPassword = async (userParam: UserLogin): Promise<UserModel | null> => {
-  const users: Users | null = await Reader.readAllData<Users>("users.json");
+  const users: Users | null = await DataReader.readAllData<Users>("users.json");
 
   if (!users) {
     throw new Error("ไม่สามารถอ่านข้อมูล users ได้!");
@@ -115,4 +122,12 @@ export const getUserbyUsernameAndPassword = async (userParam: UserLogin): Promis
   }
 
   return null;
+}
+
+export const getToken = (authorization: string | undefined): string => {
+  if (!authorization && !authorization?.includes("Bearer ")) {
+    throw new Error("token ไม่ถูกต้อง!");
+  }
+
+  return authorization.replace("Bearer ", "");
 }

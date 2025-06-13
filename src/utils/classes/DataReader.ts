@@ -3,7 +3,7 @@ import { BookModel, Books } from "../../types/models/book.js";
 import FileManager from "./FileManager.js";
 import { Users } from "../../types/models/user.js";
 
-export default class Reader extends FileManager {
+export default class DataReader extends FileManager {
   public static async readAllData<T extends Books | Users>(filename: string = "books.json"): Promise<T | null> {
     try {
       if (await this.accessible()) {
