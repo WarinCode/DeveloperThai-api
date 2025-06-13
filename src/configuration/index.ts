@@ -5,7 +5,7 @@ import rateLimit, { RateLimitRequestHandler } from "express-rate-limit";
 export const corsOptions: CorsOptions = {
     origin: ["*"],
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: ["Content-Type", "Authorization", "DeveloperThai-Api-Key"],
 }
 
 export const dotenvOptions: DotenvConfigOptions = {

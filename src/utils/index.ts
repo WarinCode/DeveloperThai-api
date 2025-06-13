@@ -4,10 +4,15 @@ import path from "path";
 import bcrypt from "bcrypt";
 import { fileURLToPath } from 'url';
 import DataReader from "./classes/DataReader.js";
+import HttpResponseError from "../error/HttpResponseError.js";
 import { Users, UserModel, UserLogin } from "../types/models/user.js";
 
 export const responseError = (res: Response, e: unknown | Error, statusCode?: number) => {
-  if (e instanceof ZodError) {
+  if (e instanceof HttpResponseError) {
+    console.log(1);
+    console.error(e.getMessage());
+    res.type("json").status(e.getStatusCode()).json({ message: e.getMessage() });
+  } else if (e instanceof ZodError) {
     console.error(e.toString());
     res.type("json").status(statusCode ?? 500).json({
       message: e.errors,

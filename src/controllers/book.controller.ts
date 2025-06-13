@@ -4,8 +4,9 @@ import DataReader from "../utils/classes/DataReader.js";
 import DataWriter from "../utils/classes/DataWriter.js";
 import BookValidator from "../utils/classes/BookValidator.js";
 import { Books, BookModel } from "../types/models/book.js";
-import { BookParams, QueryParams, ReqBody, ResBody } from "../types/types.js";
+import { BookParams, QueryParams } from "../types/types.js";
 import BookSchema, * as BookPropertySchema from "../types/schemas/book.js";
+import HttpResponseError from "../error/HttpResponseError.js";
 
 export default class BookController {
   public sendHelloWorld(req: Request, res: Response): void {
@@ -19,8 +20,8 @@ export default class BookController {
     try {
       const books: Books | null = await DataReader.readAllData<Books>();
 
-      if (books === null) {
-        throw new Error("ไม่มีรายการข้อมูลหนังสือใดๆ!");
+      if (!books) {
+        throw new HttpResponseError("ไม่มีรายการข้อมูลหนังสือใดๆ!");
       }
       res.status(200).type("json").json(books);
     } catch (e: unknown) {
@@ -38,7 +39,7 @@ export default class BookController {
       );
 
       if (!book) {
-        throw new Error("ไม่มีข้อมูลหนังสือที่ท่านเรียกหา!");
+        throw new HttpResponseError("ไม่มีข้อมูลหนังสือที่ท่านเรียกหา!");
       }
 
       res.status(200).type("json").json(book);
@@ -55,7 +56,7 @@ export default class BookController {
       const books: Books | null = await DataReader.readAllData<Books>();
 
       if (books === null || !keyword) {
-        throw new Error("ไม่มีรายการข้อมูลหนังสือใดๆ!");
+        throw new HttpResponseError("ไม่มีรายการข้อมูลหนังสือใดๆ!");
       }
 
       const results: Books = books.filter((book: BookModel): boolean =>
@@ -63,7 +64,7 @@ export default class BookController {
       );
 
       if (!results.length) {
-        throw new Error("ไม่มีรายการข้อมูลหนังสือใดๆ!");
+        throw new HttpResponseError("ไม่มีรายการข้อมูลหนังสือใดๆ!");
       }
 
       res.status(200).type("json").json(results);
@@ -73,25 +74,25 @@ export default class BookController {
   }
 
   public async create(
-    { body }: Request<any, ResBody, ReqBody>,
+    { body }: Request<any, BookModel, BookModel>,
     res: Response
   ) {
     try {
       const books: Books | null = await DataReader.readAllData<Books>();
 
-      if (books === null) {
-        throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
+      if (!books) {
+        throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
       }
 
       BookSchema.parse(body);
       BookValidator.checkPropertyName(body);
 
       if (await BookValidator.isIsbnExists(body.isbn)) {
-        throw new Error("มีเลข isbn นี้ซ้ำอยู่แล้วในข้อมูล!");
+        throw new HttpResponseError("มีเลข isbn นี้ซ้ำอยู่แล้วในข้อมูล!");
       }
 
-      if (!(await BookValidator.checkIsbnLength(body.isbn))) {
-        throw new Error("ความยาวของเลข isbn จะต้องมีความยาว 13 หลักเท่านั้น!");
+      if (!BookValidator.checkIsbnLength(body.isbn)) {
+        throw new HttpResponseError("ความยาวของเลข isbn จะต้องมีความยาว 13 หลักเท่านั้น!");
       }
 
       books.push(body);
@@ -104,34 +105,33 @@ export default class BookController {
   }
 
   public async update(
-    { params: { isbn }, body }: Request<BookParams, ResBody, ReqBody>,
+    { params: { isbn }, body }: Request<BookParams, BookModel, BookModel>,
     res: Response
   ) {
     try {
       const books: Books | null = await DataReader.readAllData<Books>();
 
-      if (books === null) {
-        throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
+      if (!books) {
+        throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
       }
 
       BookSchema.parse(body);
       BookValidator.checkPropertyName(body);
 
       if (await BookValidator.isIsbnExists(parseInt(isbn))) {
-        const books2: Books = books.map((book: BookModel): BookModel => {
+        const filteredBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === parseInt(isbn)) {
             book = body;
           }
           return book;
         });
 
-        await DataWriter.writeFile(JSON.stringify(books2, null, 4));
+        await DataWriter.writeFile(JSON.stringify(filteredBooks, null, 4));
         res.status(200).json({ message: "แก้ไขข้อมูลหนังสือสำเร็จ" });
-
         return;
       }
 
-      throw new Error("ไม่พบข้อมูลหนังสือที่ต้องการจะอัปเดต!");
+      throw new HttpResponseError("ไม่พบข้อมูลหนังสือที่ต้องการจะอัปเดต!");
     } catch (e: unknown) {
       responseError(res, e);
     }
@@ -144,22 +144,21 @@ export default class BookController {
     try {
       const books: Books | null = await DataReader.readAllData<Books>();
 
-      if (books === null) {
-        throw new Error("ไม่สามารถสร้างหนังสือใหม่แล้วเพิ่มข้อมูลเข้าไปได้!");
+      if (!books) {
+        throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
       }
 
       if (await BookValidator.isIsbnExists(parseInt(isbn))) {
-        const books2 = books.filter(
+        const filteredBooks = books.filter(
           (book: BookModel) => book.isbn !== parseInt(isbn)
         );
 
-        await DataWriter.writeFile(JSON.stringify(books2, null, 4));
+        await DataWriter.writeFile(JSON.stringify(filteredBooks, null, 4));
         res.status(200).json({ message: "ลบหนังสือใหม่สำเร็จ" });
-
         return;
       }
 
-      throw new Error("ไม่พบข้อมูลหนังสือที่ต้องการจะลบ!");
+      throw new HttpResponseError("ไม่พบข้อมูลหนังสือที่ต้องการจะลบ!");
     } catch (e: unknown) {
       responseError(res, e);
     }
@@ -172,7 +171,12 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.bookName.parse(bookName);
 
-        const books: Books = <Books>await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>();
+
+        if (!books) {
+          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+        }
+
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.bookName = bookName;
@@ -186,7 +190,7 @@ export default class BookController {
         return;
       };
 
-      throw new Error("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
+      throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
       responseError(res, e);
     }
@@ -199,7 +203,12 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.imageUrl.parse(imageUrl);
 
-        const books: Books = <Books>await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>();
+
+        if (!books) {
+          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+        }
+
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.imageUrl = imageUrl;
@@ -213,7 +222,7 @@ export default class BookController {
         return;
       };
 
-      throw new Error("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
+      throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
       responseError(res, e);
     }
@@ -226,7 +235,12 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.author.parse(author);
 
-        const books: Books = <Books>await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>();
+
+        if (!books) {
+          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+        }
+
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.author = author;
@@ -240,7 +254,7 @@ export default class BookController {
         return;
       };
 
-      throw new Error("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
+      throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
       responseError(res, e);
     }
@@ -254,7 +268,12 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(oldIsbn)) {
         BookPropertySchema.isbn.parse(newIsbn);
 
-        const books: Books = <Books>await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>();
+
+        if (!books) {
+          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+        }
+
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === oldIsbn) {
             book.isbn = newIsbn;
@@ -268,7 +287,7 @@ export default class BookController {
         return;
       };
 
-      throw new Error("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
+      throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
       responseError(res, e);
     }
@@ -281,7 +300,12 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.price.parse(price);
 
-        const books: Books = <Books>await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>();
+
+        if (!books) {
+          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+        }
+
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.price = price;
@@ -295,7 +319,7 @@ export default class BookController {
         return;
       };
 
-      throw new Error("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
+      throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
       responseError(res, e);
     }
@@ -308,7 +332,12 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.pageCount.parse(pageCount);
 
-        const books: Books = <Books>await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>();
+
+        if (!books) {
+          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+        }
+
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.pageCount = pageCount;
@@ -322,7 +351,7 @@ export default class BookController {
         return;
       };
 
-      throw new Error("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
+      throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
       responseError(res, e);
     }
@@ -335,7 +364,12 @@ export default class BookController {
       if (await BookValidator.isIsbnExists(isbn)) {
         BookPropertySchema.tableofContents.parse(tableofContents);
 
-        const books: Books = <Books>await DataReader.readAllData<Books>();
+        const books: Books | null = await DataReader.readAllData<Books>();
+
+        if (!books) {
+          throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!");
+        }
+
         const updatedBooks: Books = books.map((book: BookModel): BookModel => {
           if (book.isbn === isbn) {
             book.tableofContents = tableofContents;
@@ -349,7 +383,7 @@ export default class BookController {
         return;
       };
 
-      throw new Error("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
+      throw new HttpResponseError("ไม่สามารถทำการแก้ไขข้อมูลหนังสือได้!");
     } catch (e: unknown) {
       responseError(res, e);
     }

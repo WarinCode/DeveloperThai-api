@@ -6,6 +6,7 @@ import { corsOptions, dotenvOptions, limiter } from "./configuration/index.js";
 import BookController from "./controllers/book.controller.js";
 import UserController from "./controllers/user.controller.js";
 import AuthMiddleware from "./middlewares/AuthMiddleware.js";
+import ApiKeyMiddleware from "./middlewares/ApiKeyMiddleware.js";
 import { getStaticPath } from "./utils/index.js";
 import { EnvironmentVariables } from "./types/types.js";
 
@@ -23,7 +24,8 @@ app
   .use(cors(corsOptions))
   .use(express.static(getStaticPath()))
   .use(limiter)
-  .use("/api/*", AuthMiddleware.authorization);
+  .use("/api/*", AuthMiddleware.authorization)
+  .use(ApiKeyMiddleware.validateKey);
 app
   .get("/", bookController.sendHelloWorld)
   .post("/sign-in", userController.signIn)
@@ -45,5 +47,6 @@ app
   .put("/api/users/update/:userId", userController.updateUser)
   .patch("/api/users/update/:userId/password", userController.updatePassword)
   .delete("/api/users/delete/:userId", userController.deleteUserAccount)
+  .post("/api/key", userController.createApiKey)
   .all("*", userController.pageNotFound)
   .listen(port, (): void => console.log(`Server is running on port: ${port}`));

@@ -1,4 +1,4 @@
-import { BookModel } from "./models/book.js";
+import { IncomingHttpHeaders } from "http";
 
 export interface EnvironmentVariables extends NodeJS.ProcessEnv {
     readonly PORT: string;
@@ -9,13 +9,14 @@ export interface BookParams {
     isbn: string;
 }
 
+export interface UserParams {
+    userId: string;
+}
+
 export interface QueryParams {
     keyword: string;
 }
 
-export type ReqBody = BookModel;
-export type ResBody = BookModel;
-
-export interface UserParams {
-    userId: string;
+export interface CustomHeaders extends IncomingHttpHeaders {
+    readonly "developerthai-api-key": string | undefined;
 }

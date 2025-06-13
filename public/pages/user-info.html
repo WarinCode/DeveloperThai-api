@@ -112,11 +112,23 @@
             }
         })();
 
-        const createApiKey = async () => {
+        const fetchApiKey = async () => {
+            const token = localStorage.getItem("token");
+
             try {
-
+                const response = await fetch("http://localhost:3000/api/key", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                        "DeveloperThai-Api-Key": "dfgdgdf"
+                    }
+                })
+                const result = await response.text();
+                console.log(alert(result));
             } catch (e) {
-
+                console.error(e);
+                alert(e?.message);
             }
         }
 
@@ -210,6 +222,10 @@
         const deleteUserAccount = async () => {
             const token = localStorage.getItem("token");
 
+            if (!confirm("คุณแน่ใจว่าจะต้องการลบบัญชีนี้ของคุณใช้ไหม?")) {
+                return;
+            }
+
             try {
                 const response = await fetch(`http://localhost:3000/api/users/delete/${user.userId}`, {
                     method: "DELETE",
@@ -229,7 +245,7 @@
             }
         }
 
-        document.querySelector(".btn-create").addEventListener("click", createApiKey, { once: true });
+        document.querySelector(".btn-create").addEventListener("click", fetchApiKey);
         document.querySelector(".btn-edit-user").addEventListener("click", showUserForm);
         document.querySelector(".btn-edit-password").addEventListener("click", showPasswordForm);
         document.querySelector("#user-form").addEventListener("submit", updateUserData);

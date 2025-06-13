@@ -39,3 +39,14 @@ testing(async () => {
     console.log(hashPassword);
     console.log(await bcrypt.compare(password, hashPassword));
 }, false);
+
+testing(() => {
+    const date = new Date();
+    const date2 = new Date();
+    date2.setDate(date.getDate() + 10);
+    
+    console.log('วันนี้', date.toDateString());
+    console.log('วันพรุ่งนี้', date2.toDateString());
+
+    console.log(date2 > date)
+}, false);

@@ -9,16 +9,13 @@ import { UserParams, EnvironmentVariables } from "../types/types.js";
 import { responseError, generateUserId, isUserExists, getUserbyUsernameAndPassword, getToken } from "../utils/index.js";
 import { UserModel, Users, UserLogin } from "../types/models/user.js";
 import * as UserPropertySchema from "../types/schemas/user.js";
+import HttpResponseError from "../error/HttpResponseError.js";
 
 export default class UserController {
     public async signIn({ body, headers: { authorization } }: Request<any, UserLogin, UserLogin>, res: Response): Promise<void> {
-        if (authorization) {
-            const result: boolean = await AuthMiddleware.isAuthorized(authorization);
-
-            if (result) {
-                res.type("json").status(200).json({ message: "login สำเร็จ" });
-                return;
-            }
+        if (AuthMiddleware.isAuthorized(authorization)) {
+            res.type("json").status(200).json({ message: "login สำเร็จ" });
+            return;
         }
 
         const secretKey: string = (<EnvironmentVariables>process.env).SECRET_KEY;
@@ -28,7 +25,7 @@ export default class UserController {
             const user: UserModel | null = await getUserbyUsernameAndPassword(validateUser);
 
             if (!user) {
-                throw new Error("login ล้มเหลว ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง");
+                throw new HttpResponseError("login ล้มเหลว ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง", 403);
             }
 
             if (await bcrypt.compare(validateUser.password, user.password)) {
@@ -37,7 +34,7 @@ export default class UserController {
                 return;
             }
 
-            throw new Error("เกิดข้อผิดพลาดบางอย่างขึ้น!");
+            throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้น!");
         } catch (e: unknown) {
             responseError(res, e);
         }
@@ -54,12 +51,12 @@ export default class UserController {
             userData.password = hashPassword;
 
             if (await isUserExists(userData)) {
-                throw new Error("มีข้อมูลผู้ใช้งานนี้อยู่ในระบบอยู่แล้ว!");
+                throw new HttpResponseError("มีข้อมูลผู้ใช้งานนี้อยู่ในระบบอยู่แล้ว!");
             }
 
-            const users = await DataReader.readAllData<Users>("users.json");
+            const users: Users | null = await DataReader.readAllData<Users>("users.json");
             if (!users) {
-                throw new Error("ไม่สามารถอ่านข้อมูล users ได้!");
+                throw new HttpResponseError("ไม่สามารถอ่านข้อมูล users ได้!");
             }
             users.push(userData);
             await DataWriter.writeFile(JSON.stringify(users, null, 4), "users.json");
@@ -84,7 +81,7 @@ export default class UserController {
         try {
             if (AuthMiddleware.isAuthorized(authorization)) {
                 if (!(await isUserExists(userId))) {
-                    throw new Error("รหัส id ของผู้ใช้งานไม่ถูกต้อง!");
+                    throw new HttpResponseError("รหัส id ของผู้ใช้งานไม่ถูกต้อง!", 403);
                 }
 
                 const users: Users = <Users>await DataReader.readAllData<Users>("users.json");
@@ -95,7 +92,7 @@ export default class UserController {
                 return;
             }
 
-            throw new Error("เกิดข้อผิดพลาดลางอย่างเกิดขึ้น!");
+            throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้น!");
         } catch (e: unknown) {
             responseError(res, e);
         }
@@ -104,7 +101,7 @@ export default class UserController {
     public async updatePassword({ params: { userId }, body: { password }, headers: { authorization } }: Request<UserParams, Pick<UserModel, "password">, Pick<UserModel, "password">>, res: Response): Promise<void> {
         try {
             if (!AuthMiddleware.isAuthorized(authorization)) {
-                throw new Error("ผู้ใช้งานยืนยันตัวตนไม่ถูกต้อง!");
+                throw new HttpResponseError("ผู้ใช้งานยืนยันตัวตนไม่ถูกต้อง!", 403);
             }
 
             if (await isUserExists(userId)) {
@@ -128,7 +125,7 @@ export default class UserController {
                 return;
             }
 
-            throw new Error("รหัส id ผู้ใช้งานไม่ถูกต้อง!");
+            throw new HttpResponseError("รหัส id ผู้ใช้งานไม่ถูกต้อง!");
         } catch (e: unknown) {
             responseError(res, e);
         }
@@ -137,15 +134,15 @@ export default class UserController {
     public async updateUser({ body, params: { userId }, headers: { authorization } }: Request<UserParams, Omit<UserModel, "password">, Omit<UserModel, "password">>, res: Response): Promise<void> {
         try {
             if (!AuthMiddleware.isAuthorized(authorization)) {
-                throw new Error("ผู้ใช้งานยืนยันตัวตนไม่ถูกต้อง!");
+                throw new HttpResponseError("ผู้ใช้งานยืนยันตัวตนไม่ถูกต้อง!", 403);
             }
 
             if (await isUserExists(userId)) {
                 UserPropertySchema.email.parse(body.email);
                 UserPropertySchema.username.parse(body.username);
-                
+
                 if (await isUserExists({ ...body, password: "" })) {
-                    throw new Error("มีชื่อผู้ใช้งานหรืออีเมลใช้งานในระบบอยู่แล้ว!");
+                    throw new HttpResponseError("มีชื่อผู้ใช้งานหรืออีเมลใช้งานในระบบอยู่แล้ว!");
                 }
 
                 let newToken: string = "";
@@ -165,7 +162,15 @@ export default class UserController {
                 return;
             }
 
-            throw new Error("รหัส id ผู้ใช้งานไม่ถูกต้อง!");
+            throw new HttpResponseError("รหัส id ผู้ใช้งานไม่ถูกต้อง!");
+        } catch (e: unknown) {
+            responseError(res, e);
+        }
+    }
+
+    public async createApiKey(req: Request, res: Response): Promise<void> {
+        try {
+            res.send("dfgtd");
         } catch (e: unknown) {
             responseError(res, e);
         }
