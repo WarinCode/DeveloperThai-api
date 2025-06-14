@@ -1,20 +1,20 @@
 import express, { Express, urlencoded, json } from "express";
 import logger from "morgan";
 import cors from "cors";
+import compression from "compression";
 import { configDotenv } from "dotenv";
-import { corsOptions, dotenvOptions, limiter } from "./configuration/index.js";
-import BookController from "./controllers/book.controller.js";
 import UserController from "./controllers/user.controller.js";
 import AuthMiddleware from "./middlewares/AuthMiddleware.js";
 import ApiKeyMiddleware from "./middlewares/ApiKeyMiddleware.js";
-import { getStaticPath } from "./utils/index.js";
-import { EnvironmentVariables } from "./types/types.js";
+import bookRoutes from "./routes/book.route.js";
+import userRoutes from "./routes/user.route.js";
+import { getStaticPath, getEnv } from "./utils/index.js";
+import { corsOptions, dotenvOptions, limiter, compressionOptions } from "./configuration/index.js";
 
 const app: Express = express();
 
 configDotenv(dotenvOptions);
-const port: number = parseInt((<EnvironmentVariables>process.env).PORT);
-const bookController: BookController = new BookController();
+const port: number = getEnv("PORT") ? parseInt(<string>getEnv("PORT")) : 3000;
 const userController: UserController = new UserController();
 
 app
@@ -24,29 +24,14 @@ app
   .use(cors(corsOptions))
   .use(express.static(getStaticPath()))
   .use(limiter)
+  .use(compression(compressionOptions))
   .use("/api/*", AuthMiddleware.authorization)
-  .use(ApiKeyMiddleware.validateKey);
+  .use("/api/books/*", ApiKeyMiddleware.validateKey);
 app
-  .get("/", bookController.sendHelloWorld)
+  .get("/", userController.sendHelloWorld)
   .post("/sign-in", userController.signIn)
   .post("/sign-up", userController.signUp)
-  .get("/api/books", bookController.getBooks)
-  .get("/api/books/search", bookController.search) // /api/books/search/?keyword=:keyword
-  .get("/api/books/:isbn", bookController.getBook)
-  .post("/api/books/create", bookController.create)
-  .put("/api/books/update/:isbn", bookController.update)
-  .delete("/api/books/delete/:isbn", bookController.delete)
-  .patch("/api/books/update/:isbn/bookname", bookController.updateBookName)
-  .patch("/api/books/update/:isbn/isbn", bookController.updateIsbn)
-  .patch("/api/books/update/:isbn/image", bookController.updateImage)
-  .patch("/api/books/update/:isbn/author", bookController.updateAuthor)
-  .patch("/api/books/update/:isbn/price", bookController.updatePrice)
-  .patch("/api/books/update/:isbn/page-count", bookController.updatePageCount)
-  .patch("/api/books/update/:isbn/table-of-contents", bookController.updateTableofContents)
-  .get("/api/user/data", userController.getUserData)
-  .put("/api/users/update/:userId", userController.updateUser)
-  .patch("/api/users/update/:userId/password", userController.updatePassword)
-  .delete("/api/users/delete/:userId", userController.deleteUserAccount)
-  .post("/api/key", userController.createApiKey)
+  .use(bookRoutes)
+  .use(userRoutes)
   .all("*", userController.pageNotFound)
   .listen(port, (): void => console.log(`Server is running on port: ${port}`));

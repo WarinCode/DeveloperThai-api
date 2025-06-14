@@ -4,7 +4,6 @@ import bcrypt from "bcrypt";
 import UserSchema from "../types/schemas/user.js";
 import DataWriter from "../utils/classes/DataWriter.js";
 import DataReader from "../utils/classes/DataReader.js";
-import AuthMiddleware from "../middlewares/AuthMiddleware.js";
 import { UserParams, EnvironmentVariables } from "../types/types.js";
 import { responseError, generateUserId, isUserExists, getUserbyUsernameAndPassword, getToken, generateApiKey } from "../utils/index.js";
 import { UserModel, Users, UserLogin } from "../types/models/user.js";
@@ -12,10 +11,15 @@ import * as UserPropertySchema from "../types/schemas/user.js";
 import HttpResponseError from "../error/HttpResponseError.js";
 import { UserApiKey, UserApiKeys } from "../types/models/userApiKey.js";
 import FileNotFoundError from "../error/FileNotFoundError.js";
+import { isAuthorized } from "../utils/index.js";
 
 export default class UserController {
+    public sendHelloWorld(req: Request, res: Response): void {
+        res.send("Hello World!");
+    }
+
     public async signIn({ body, headers: { authorization } }: Request<any, UserLogin, UserLogin>, res: Response): Promise<void> {
-        if (AuthMiddleware.isAuthorized(authorization)) {
+        if (isAuthorized(authorization)) {
             res.type("json").status(200).json({ message: "login สำเร็จ" });
             return;
         }
@@ -81,7 +85,7 @@ export default class UserController {
 
     public async deleteUserAccount({ headers: { authorization }, params: { userId } }: Request<UserParams>, res: Response): Promise<void> {
         try {
-            if (AuthMiddleware.isAuthorized(authorization)) {
+            if (isAuthorized(authorization)) {
                 if (!(await isUserExists(userId))) {
                     throw new HttpResponseError("รหัส id ของผู้ใช้งานไม่ถูกต้อง!", 403);
                 }
@@ -102,7 +106,7 @@ export default class UserController {
 
     public async updatePassword({ params: { userId }, body: { password }, headers: { authorization } }: Request<UserParams, Pick<UserModel, "password">, Pick<UserModel, "password">>, res: Response): Promise<void> {
         try {
-            if (!AuthMiddleware.isAuthorized(authorization)) {
+            if (!isAuthorized(authorization)) {
                 throw new HttpResponseError("ผู้ใช้งานยืนยันตัวตนไม่ถูกต้อง!", 403);
             }
 
@@ -135,7 +139,7 @@ export default class UserController {
 
     public async updateUser({ body, params: { userId }, headers: { authorization } }: Request<UserParams, Omit<UserModel, "password">, Omit<UserModel, "password">>, res: Response): Promise<void> {
         try {
-            if (!AuthMiddleware.isAuthorized(authorization)) {
+            if (!isAuthorized(authorization)) {
                 throw new HttpResponseError("ผู้ใช้งานยืนยันตัวตนไม่ถูกต้อง!", 403);
             }
 
@@ -172,7 +176,7 @@ export default class UserController {
 
     public async createApiKey({ headers: { authorization } }: Request, res: Response): Promise<void> {
         try {
-            if (!AuthMiddleware.isAuthorized(authorization)) {
+            if (!isAuthorized(authorization)) {
                 throw new HttpResponseError("ผู้ใช้งานยืนยันตัวตนไม่ถูกต้อง!", 403);
             }
 
@@ -188,7 +192,7 @@ export default class UserController {
                 throw new FileNotFoundError("ไม่สามารถเปิดอ่านไฟล์ข้อมูลได้!", "api-keys.json");
             }
 
-            const data: UserApiKey = { 
+            const data: UserApiKey = {
                 username: user.username,
                 userId: user.userId,
                 key: apiKey,

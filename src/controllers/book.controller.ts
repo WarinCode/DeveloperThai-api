@@ -9,10 +9,6 @@ import BookSchema, * as BookPropertySchema from "../types/schemas/book.js";
 import HttpResponseError from "../error/HttpResponseError.js";
 
 export default class BookController {
-  public sendHelloWorld(req: Request, res: Response): void {
-    res.send("Hello World!");
-  }
-
   public async getBooks(req: Request, res: Response): Promise<void> {
     try {
       const books: Books | null = await DataReader.readAllData<Books>(

@@ -6,13 +6,13 @@ import { DataFiles } from "../../types/types.js";
 import { UserApiKeys } from "../../types/models/userApiKey.js";
 import FileNotFoundError from "../../error/FileNotFoundError.js";
 
-export default class DataReader extends FileManager {
+export default class DataReader {
   public static async readAllData<T extends Books | Users | UserApiKeys>(
     filename: DataFiles
   ): Promise<T | null> {
     try {
-      if (await this.accessible(filename)) {
-        const text: string = await fs.readFile(this.getPath(filename), {
+      if (await FileManager.accessible(filename)) {
+        const text: string = await fs.readFile(FileManager.getPath(filename), {
           encoding: "utf8",
         });
         const data: T = JSON.parse(text);

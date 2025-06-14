@@ -1,7 +1,9 @@
 import { ZodError } from "zod";
 import { Response } from "express";
+import { configDotenv } from "dotenv";
 import path from "path";
 import bcrypt from "bcrypt";
+import jwt, { VerifyErrors } from "jsonwebtoken";
 import { fileURLToPath } from "url";
 import DataReader from "./classes/DataReader.js";
 import HttpResponseError from "../error/HttpResponseError.js";
@@ -9,6 +11,8 @@ import FileNotFoundError from "../error/FileNotFoundError.js";
 import { Users, UserModel, UserLogin } from "../types/models/user.js";
 import { DataFiles } from "../types/types.js";
 import { UserApiKey, UserApiKeys } from "../types/models/userApiKey.js";
+import { EnvironmentVariables } from "../types/types.js";
+import { dotenvOptions } from "../configuration/index.js";
 
 export const responseError = (
   res: Response,
@@ -46,14 +50,29 @@ export const responseError = (
   }
 };
 
+export const getEnv = (key: keyof EnvironmentVariables): string => {
+  configDotenv(dotenvOptions);
+  const env: EnvironmentVariables = process.env as EnvironmentVariables;
+  return env[key] as string;
+}
+
 export const getRootPath = (): string => {
   const file: string = fileURLToPath(import.meta.url);
-  const dirname: string = path.dirname(file).replace("\\src\\utils", "");
-  return dirname;
+  const dirname: string = path.dirname(file);
+
+  if (getEnv("NODE_ENV") === "development") {
+    return dirname.replace("\\src\\utils", "");
+  }
+
+  return dirname.replace("\\build\\utils", "");
 };
 
 export const getDataPath = (filename: DataFiles): string => {
-  return path.join(getRootPath(), "src", "data", filename);
+  if (getEnv("NODE_ENV") === "development") {
+    return path.join(getRootPath(), "src", "data", filename);
+  }
+
+  return path.join(getRootPath(), "build", "data", filename);
 };
 
 export const getStaticPath = (): string => {
@@ -191,3 +210,27 @@ export const getToken = (authorization: string | undefined): string => {
 
   return authorization.replace("Bearer ", "");
 };
+
+export const isAuthorized = (authorization: string | undefined): boolean => {
+  const secretKey: string = (<EnvironmentVariables>process.env).SECRET_KEY;
+  let isVerifyError: boolean = false;
+
+  if (!authorization || !authorization?.startsWith("Bearer")) {
+    return false;
+  }
+
+  const token: string = getToken(authorization);
+  jwt.verify(token, secretKey, (err: VerifyErrors | null): void => {
+    if (err instanceof jwt.JsonWebTokenError || err !== null) {
+      isVerifyError = true;
+    } else {
+      isVerifyError = false;
+    }
+  });
+
+  if (isVerifyError) {
+    return false;
+  }
+
+  return true;
+}

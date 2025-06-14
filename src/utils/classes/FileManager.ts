@@ -3,11 +3,11 @@ import { getDataPath } from "../index.js";
 import { DataFiles } from "../../types/types.js";
 
 export default class FileManager {
-  protected static getPath(filename: DataFiles): string {
+  public static getPath(filename: DataFiles): string {
     return getDataPath(filename);
   }
 
-  protected static async accessible(filename: DataFiles): Promise<boolean> {
+  public static async accessible(filename: DataFiles): Promise<boolean> {
     try {
       await fs.access(this.getPath(filename), constants.W_OK | constants.R_OK);
       return true;

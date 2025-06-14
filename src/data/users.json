@@ -2,13 +2,7 @@
     {
         "username": "root",
         "email": "root@gmail.com",
-        "password": "$2b$10$K1fRw53rVXyY3cOnx2TVjO.4.aWMyon3SGZ9uBCmKbMBIAmPcp8my",
-        "userId": "pLz9GQxc8TrFIBjlOt6quJJMYuV1Htcl5nagVyOi"
-    },
-    {
-        "username": "test",
-        "email": "test@gmail.com",
-        "password": "$2b$10$4Z4vYR8sXo.oeztcfC4WAORzn.rZA7Yn.GVlG5iy/5prIQz4Nqhxq",
-        "userId": "QV8fYgpBb3qHbzlWPIDCBJPIlVWjaxE71g4b13SK"
+        "password": "$2b$10$MqlAV8lktGvQezGQcEpaueEG6cLvjI20rXUtE6zyDKCS3cMqGGed.",
+        "userId": "qlf4jlWd1RmKluEb65JkFWKJea8kZVIy7BWPxxli"
     }
 ]
