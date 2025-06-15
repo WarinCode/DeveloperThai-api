@@ -5,13 +5,12 @@ import UserSchema from "../types/schemas/user.js";
 import DataWriter from "../utils/classes/DataWriter.js";
 import DataReader from "../utils/classes/DataReader.js";
 import { UserParams, EnvironmentVariables } from "../types/types.js";
-import { responseError, generateUserId, isUserExists, getUserbyUsernameAndPassword, getToken, generateApiKey } from "../utils/index.js";
+import { responseError, generateUserId, isUserExists, getUserbyUsernameAndPassword, getToken, generateApiKey, getApiKey, isAuthorized, isApiKeyActive, isApiKeyExists } from "../utils/index.js";
 import { UserModel, Users, UserLogin } from "../types/models/user.js";
 import * as UserPropertySchema from "../types/schemas/user.js";
 import HttpResponseError from "../error/HttpResponseError.js";
 import { UserApiKey, UserApiKeys } from "../types/models/userApiKey.js";
 import FileNotFoundError from "../error/FileNotFoundError.js";
-import { isAuthorized } from "../utils/index.js";
 
 export default class UserController {
     public sendHelloWorld(req: Request, res: Response): void {
@@ -62,7 +61,7 @@ export default class UserController {
 
             const users: Users | null = await DataReader.readAllData<Users>("users.json");
             if (!users) {
-                throw new HttpResponseError("ไม่สามารถอ่านข้อมูล users ได้!");
+                throw new FileNotFoundError("ไม่สามารถอ่านข้อมูล users ได้!", "users.json");
             }
             users.push(userData);
             await DataWriter.writeFile(JSON.stringify(users, null, 4), "users.json");
@@ -73,11 +72,13 @@ export default class UserController {
         }
     }
 
-    public getUserData({ headers: { authorization } }: Request, res: Response): void {
+    public async getUserData({ headers: { authorization } }: Request, res: Response): Promise<void> {
         try {
             const token: string = getToken(authorization);
             const decoded: UserModel & JwtPayload = <UserModel & JwtPayload>jwt.decode(token);
-            res.type("json").status(200).json(decoded);
+            const apiKey: string | null = await getApiKey(decoded.userId);
+            const isActiveKey: boolean = await isApiKeyActive(decoded.userId);
+            res.type("json").status(200).json({ ...decoded, apiKey, isActiveKey });
         } catch (e: unknown) {
             responseError(res, e);
         }
@@ -85,20 +86,32 @@ export default class UserController {
 
     public async deleteUserAccount({ headers: { authorization }, params: { userId } }: Request<UserParams>, res: Response): Promise<void> {
         try {
-            if (isAuthorized(authorization)) {
-                if (!(await isUserExists(userId))) {
-                    throw new HttpResponseError("รหัส id ของผู้ใช้งานไม่ถูกต้อง!", 403);
-                }
-
-                const users: Users = <Users>await DataReader.readAllData<Users>("users.json");
-                const filteredUsers: Users = users.filter((user: UserModel): boolean => user.userId !== userId);
-                await DataWriter.writeFile(JSON.stringify(filteredUsers, null, 4), "users.json");
-
-                res.type("json").status(200).json({ message: "ลบบัญชีผู้ใช้งานสำเร็จ" });
-                return;
+            if (!isAuthorized(authorization)) {
+                throw new HttpResponseError("ผู้ใช้งานยืนยันตัวตนไม่ถูกต้อง!", 403);
             }
 
-            throw new HttpResponseError("เกิดข้อผิดพลาดบางอย่างขึ้น!");
+            if (!await isUserExists(userId)) {
+                throw new HttpResponseError("รหัส id ของผู้ใช้งานไม่ถูกต้อง!", 403);
+            }
+
+            const users: Users | null = await DataReader.readAllData<Users>("users.json");
+            if (!users) {
+                throw new FileNotFoundError("ไม่สามารถอ่านข้อมูลได้", "users.json");
+            }
+            const filteredUsers: Users = users.filter((user: UserModel): boolean => user.userId !== userId);
+            await DataWriter.writeFile(JSON.stringify(filteredUsers, null, 4), "users.json");
+
+            if (await isApiKeyExists("userId", userId)) {
+                const users2: UserApiKeys | null = await DataReader.readAllData<UserApiKeys>("api-keys.json");
+                if (!users2) {
+                    throw new FileNotFoundError("ไม่สามารถอ่านข้อมูลได้!", "api-keys.json");
+                }
+                const filteredUsers2: UserApiKeys = users2.filter((u: UserApiKey): boolean => u.userId !== userId);
+                await DataWriter.writeFile(JSON.stringify(filteredUsers2, null, 4), "api-keys.json");
+            }
+
+            res.type("json").status(200).json({ message: "ลบบัญชีผู้ใช้งานสำเร็จ" });
+            return;
         } catch (e: unknown) {
             responseError(res, e);
         }
@@ -164,6 +177,20 @@ export default class UserController {
                 })
                 await DataWriter.writeFile(JSON.stringify(updatedUser, null, 4), "users.json");
 
+                if (await isApiKeyExists("userId", userId)) {
+                    const users2: UserApiKeys | null = await DataReader.readAllData<UserApiKeys>("api-keys.json");
+                    if (!users2) {
+                        throw new FileNotFoundError("ไม่สามารถอ่านข้อมูลได้", "api-keys.json");
+                    }
+                    const updatedUsers2: UserApiKeys = users2.map((user: UserApiKey): UserApiKey => {
+                        if (user.userId === userId) {
+                            user.username = body.username;
+                        }
+                        return user;
+                    })
+                    await DataWriter.writeFile(JSON.stringify(updatedUsers2, null, 4), "api-keys.json");
+                }
+
                 res.type("json").status(200).json({ message: "แก้ไขชื่อผู้ใช้งานและอีเมลเรียบร้อย", username: body.username, email: body.email, newToken });
                 return;
             }
@@ -182,7 +209,14 @@ export default class UserController {
 
             const token: string = getToken(authorization);
             const user: UserModel = <UserModel>jwt.decode(token);
-            const apiKey: string = await generateApiKey();
+
+            const apiKey: string | null = await getApiKey(user.userId);
+            if (apiKey) {
+                res.type("json").status(201).json({ message: "ส่ง api key เรียบร้อย", apiKey });
+                return;
+            }
+
+            const createdApiKey: string = await generateApiKey();
             const currentDate = new Date();
             const expiryDate = new Date();
             expiryDate.setDate(currentDate.getDate() + 7);
@@ -195,7 +229,7 @@ export default class UserController {
             const data: UserApiKey = {
                 username: user.username,
                 userId: user.userId,
-                key: apiKey,
+                key: createdApiKey,
                 isActiveKey: true,
                 createdAt: currentDate,
                 expiresIn: expiryDate
@@ -203,7 +237,7 @@ export default class UserController {
             users.push(data);
             await DataWriter.writeFile(JSON.stringify(users, null, 4), "api-keys.json");
 
-            res.type("json").status(201).json({ message: "สร้าง key สำเร็จ", apiKey });
+            res.type("json").status(201).json({ message: "สร้าง key สำเร็จ", apiKey: createdApiKey, isActiveKey: true });
         } catch (e: unknown) {
             responseError(res, e);
         }

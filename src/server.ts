@@ -2,6 +2,7 @@ import express, { Express, urlencoded, json } from "express";
 import logger from "morgan";
 import cors from "cors";
 import compression from "compression";
+import helmet from "helmet";
 import { configDotenv } from "dotenv";
 import UserController from "./controllers/user.controller.js";
 import AuthMiddleware from "./middlewares/AuthMiddleware.js";
@@ -24,6 +25,7 @@ app
   .use(cors(corsOptions))
   .use(express.static(getStaticPath()))
   .use(limiter)
+  .use(helmet())
   .use(compression(compressionOptions))
   .use("/api/*", AuthMiddleware.authorization)
   .use("/api/books/*", ApiKeyMiddleware.validateKey);

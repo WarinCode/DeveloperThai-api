@@ -23,3 +23,5 @@ export interface CustomHeaders extends IncomingHttpHeaders {
 }
 
 export type DataFiles = "books.json" | "users.json" | "api-keys.json";
+
+export type CallbackFunction = () => void | Promise<void>;

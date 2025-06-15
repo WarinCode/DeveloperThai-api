@@ -30,7 +30,7 @@
     </form>
 
     <div style="margin-top: 20px;" class="sign-up">
-        <a href="http://localhost:3000/pages/sign-up.html">สมัครผู้ใช้งาน</a>
+        <a href="./sign-up.html">สมัครผู้ใช้งาน</a>
     </div>
 
     <div class="loading" style="display: none;">กำลังเข้าสู่ระบบ ...</div>
@@ -43,8 +43,8 @@
             document.querySelector(".sign-up").style.display = "none";
             document.querySelector(".loading").style.display = "block";
             setTimeout(() => {
-                location.href = "http://localhost:3000/pages/user-info.html";
-            }, 3500);
+                location.href = "./user-info.html";
+            }, 1000);
         }
 
         document.querySelector("form").addEventListener("submit", async (e) => {

@@ -41,7 +41,7 @@
     </form>
 
     <div style="margin-top: 20px;">
-        <a href="http://localhost:3000/pages/sign-in.html">ไปที่หน้า login</a>
+        <a href="./sign-in.html">ไปที่หน้า login</a>
     </div>
 
     <script type="module">
@@ -68,7 +68,7 @@
                     // console.log(result);
 
                     if (response.status === 201) {
-                        location.href = "http://localhost:3000/pages/successfully.html";
+                        location.href = "./successfully.html";
                     }
 
                     throw new Error(result ? result.message : "เกิดข้อผิดพลาดบางอย่างเกิดขึ้น!");

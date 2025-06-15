@@ -22,9 +22,13 @@
         </div>
 
         <div>
-            <p>สถานะของ api key <span id="api-key-active"></span></p>
-            <button class="btn-create">สร้าง api key</button>
-            <p class="show-key"></p>
+            <p>สถานะของ Key: <span class="is-active"></span></p>
+            <p>Key: <span class="show-key"></span></p>
+            <div style="display: flex; align-items: center; width: 300px; justify-content: space-between;">
+                <button class="btn-create">สร้าง api key</button>
+                <button class="btn-enable">ปิดใช้งาน key</button>
+                <button class="btn-disable">เปิดใช้งาน key</button>
+            </div>
         </div>
 
         <div style="margin-top: 20px;" class="btn-group">
@@ -64,7 +68,7 @@
     </form>
 
     <script type="module">
-        const user = { username: null, email: null, userId: null };
+        const user = { username: null, email: null, userId: null, apiKey: null };
 
         const redirect = () => {
             location.href = "http://localhost:3000/pages/sign-in.html";
@@ -96,9 +100,17 @@
                     user.username = data.username;
                     user.email = data.email;
                     user.userId = data.userId;
+                    user.apiKey = data.apiKey;
                     document.querySelector(".show-username").textContent = user.username;
                     document.querySelector(".show-email").textContent = user.email;
                     document.querySelector(".show-id").textContent = user.userId;
+                    document.querySelector(".show-key").textContent = user.apiKey;
+
+                    if (user.apiKey) {
+                        document.querySelector(".is-active").textContent = data.isActiveKey ? "เปิดใช้งาน" : "ปิดใช้งาน";
+                        document.querySelector(".is-active").style.color = data.isActiveKey ? "green" : "red";
+                    }
+
                     document.querySelector(".loading").style.display = "none";
                     document.querySelector(".container").style.display = "block";
                     return;
@@ -113,20 +125,27 @@
         })();
 
         const fetchApiKey = async () => {
+            if (user.apiKey) {
+                return;
+            }
+
             const token = localStorage.getItem("token");
 
             try {
-                const response = await fetch("http://localhost:3000/api/key", {
+                const response = await fetch("http://localhost:3000/api/user/api-key", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${token}`
                     }
                 })
-                const { message, apiKey } = await response.text();
-                
+                const { message, apiKey, isActiveKey } = await response.json();
+
                 if (response.status === 201) {
-                    document.querySelector(".show-key").textContent = apiKey;
+                    user.apiKey = apiKey
+                    document.querySelector(".show-key").textContent = user.apiKey;
+                    document.querySelector(".is-active").textContent = isActiveKey ? "เปิดใช้งาน" : "ปิดใช้งาน";
+                    document.querySelector(".is-active").style.color = isActiveKey ? "green" : "red";
                     alert(message);
                 }
             } catch (e) {
@@ -155,6 +174,7 @@
         }
 
         const updateUserData = async (e) => {
+            document.querySelector('#user-form > button').disabled = true;
             e.preventDefault();
             const data = {
                 username: document.querySelector("#username").value.trim(),
@@ -187,10 +207,13 @@
             } catch (err) {
                 console.error(err);
                 alert(err?.message);
+            } finally {
+                document.querySelector('#user-form > button').disabled = false;
             }
         }
 
         const updatePassword = async (e) => {
+            document.querySelector("#password-form").disabled = true;
             e.preventDefault();
 
             const data = {
@@ -219,6 +242,8 @@
             } catch (err) {
                 console.error(err);
                 alert(err?.message);
+            } finally {
+                document.querySelector("#password-form").disabled = false;
             }
         }
 

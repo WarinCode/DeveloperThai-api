@@ -83,4 +83,4 @@ testing(() => {
     console.log(getEnv("PORT"));
     console.log(getEnv("SECRET_KEY"));
     console.log(getEnv("NODE_ENV"));
-})
+}, false)

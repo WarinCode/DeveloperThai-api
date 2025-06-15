@@ -7,6 +7,7 @@ import { Books, BookModel } from "../types/models/book.js";
 import { BookParams, QueryParams } from "../types/types.js";
 import BookSchema, * as BookPropertySchema from "../types/schemas/book.js";
 import HttpResponseError from "../error/HttpResponseError.js";
+import FileNotFoundError from "../error/FileNotFoundError.js";
 
 export default class BookController {
   public async getBooks(req: Request, res: Response): Promise<void> {
@@ -16,7 +17,7 @@ export default class BookController {
       );
 
       if (!books) {
-        throw new HttpResponseError("ไม่มีรายการข้อมูลหนังสือใดๆ!");
+        throw new FileNotFoundError("ไม่มีรายการข้อมูลหนังสือใดๆ!", "books.json");
       }
       res.status(200).type("json").json(books);
     } catch (e: unknown) {
@@ -34,7 +35,7 @@ export default class BookController {
       );
 
       if (!book) {
-        throw new HttpResponseError("ไม่มีข้อมูลหนังสือที่ท่านเรียกหา!");
+        throw new FileNotFoundError("ไม่มีข้อมูลหนังสือที่ท่านเรียกหา!", "books.json");
       }
 
       res.status(200).type("json").json(book);
@@ -52,8 +53,8 @@ export default class BookController {
         "books.json"
       );
 
-      if (books === null || !keyword) {
-        throw new HttpResponseError("ไม่มีรายการข้อมูลหนังสือใดๆ!");
+      if (!books || !keyword) {
+        throw new FileNotFoundError("ไม่มีรายการข้อมูลหนังสือใดๆ!", "books.json");
       }
 
       const results: Books = books.filter((book: BookModel): boolean =>
@@ -83,8 +84,8 @@ export default class BookController {
       );
 
       if (!books) {
-        throw new HttpResponseError(
-          "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+        throw new FileNotFoundError(
+          "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!", "books.json"
         );
       }
 
@@ -120,8 +121,8 @@ export default class BookController {
       );
 
       if (!books) {
-        throw new HttpResponseError(
-          "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+        throw new FileNotFoundError(
+          "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!", "books.json"
         );
       }
 
@@ -160,8 +161,8 @@ export default class BookController {
       );
 
       if (!books) {
-        throw new HttpResponseError(
-          "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+        throw new FileNotFoundError(
+          "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!", "books.json"
         );
       }
 
@@ -206,8 +207,8 @@ export default class BookController {
         );
 
         if (!books) {
-          throw new HttpResponseError(
-            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          throw new FileNotFoundError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!", "books.json"
           );
         }
 
@@ -258,8 +259,8 @@ export default class BookController {
         );
 
         if (!books) {
-          throw new HttpResponseError(
-            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          throw new FileNotFoundError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!", "books.json"
           );
         }
 
@@ -310,8 +311,8 @@ export default class BookController {
         );
 
         if (!books) {
-          throw new HttpResponseError(
-            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          throw new FileNotFoundError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!", "books.json"
           );
         }
 
@@ -359,8 +360,8 @@ export default class BookController {
         );
 
         if (!books) {
-          throw new HttpResponseError(
-            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          throw new FileNotFoundError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!", "books.json"
           );
         }
 
@@ -407,8 +408,8 @@ export default class BookController {
         );
 
         if (!books) {
-          throw new HttpResponseError(
-            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          throw new FileNotFoundError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!", "books.json"
           );
         }
 
@@ -459,8 +460,8 @@ export default class BookController {
         );
 
         if (!books) {
-          throw new HttpResponseError(
-            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          throw new FileNotFoundError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!", "books.json"
           );
         }
 
@@ -511,8 +512,8 @@ export default class BookController {
         );
 
         if (!books) {
-          throw new HttpResponseError(
-            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!"
+          throw new FileNotFoundError(
+            "เกิดข้อผิดพลาดบางอย่างขึ้นไม่สามารถทำการอ่านข้อมูลได้!", "books.json"
           );
         }
 

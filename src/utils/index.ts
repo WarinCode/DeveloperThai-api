@@ -11,7 +11,7 @@ import FileNotFoundError from "../error/FileNotFoundError.js";
 import { Users, UserModel, UserLogin } from "../types/models/user.js";
 import { DataFiles } from "../types/types.js";
 import { UserApiKey, UserApiKeys } from "../types/models/userApiKey.js";
-import { EnvironmentVariables } from "../types/types.js";
+import { EnvironmentVariables, CallbackFunction } from "../types/types.js";
 import { dotenvOptions } from "../configuration/index.js";
 
 export const responseError = (
@@ -53,7 +53,7 @@ export const responseError = (
 export const getEnv = (key: keyof EnvironmentVariables): string => {
   configDotenv(dotenvOptions);
   const env: EnvironmentVariables = process.env as EnvironmentVariables;
-  return env[key] as string;
+  return (<string>env[key]).trim();
 }
 
 export const getRootPath = (): string => {
@@ -80,7 +80,7 @@ export const getStaticPath = (): string => {
 };
 
 export const testing = async (
-  cb: () => void | Promise<void>,
+  cb: CallbackFunction,
   isRun: boolean = true
 ) => {
   if (!isRun) return;
@@ -116,7 +116,7 @@ export async function isUserExists(
   );
 }
 
-export const isApiKeyExists = async (key: string): Promise<boolean> => {
+export const isApiKeyExists = async (key: "key" | "userId", param: string): Promise<boolean> => {
   const keys: UserApiKeys | null = await DataReader.readAllData<UserApiKeys>(
     "api-keys.json"
   );
@@ -125,7 +125,7 @@ export const isApiKeyExists = async (key: string): Promise<boolean> => {
     throw new FileNotFoundError("ไม่สามารถเปิดอ่านข้อมูลได้!", "api-keys.json");
   }
 
-  return keys.some((user: UserApiKey): boolean => user.key === key);
+  return keys.some((user: UserApiKey): boolean => user[key] === param.trim());
 };
 
 export const generateId = (length: number): string => {
@@ -156,7 +156,7 @@ export const generateUserId = async (length: number = 40): Promise<string> => {
 export const generateApiKey = async (length: number = 100): Promise<string> => {
   const apiKey: string = generateId(length);
 
-  if (await isApiKeyExists(apiKey)) {
+  if (await isApiKeyExists("key", apiKey)) {
     return generateApiKey(length);
   }
 
@@ -230,6 +230,56 @@ export const isAuthorized = (authorization: string | undefined): boolean => {
 
   if (isVerifyError) {
     return false;
+  }
+
+  return true;
+}
+
+export const getApiKey = async (userId: string): Promise<string | null> => {
+  const users: UserApiKeys | null = await DataReader.readAllData<UserApiKeys>("api-keys.json");
+
+  if (!users) {
+    throw new FileNotFoundError("ไม่สามารถอ่านไฟล์ข้อมูลได้", "api-keys.json");
+  }
+
+  for (const user of users) {
+    if (user.userId === userId) {
+      return user.key;
+    }
+  }
+
+  return null;
+}
+
+export const isApiKeyActive = async (userId: string): Promise<boolean> => {
+  const users: UserApiKeys | null = await DataReader.readAllData<UserApiKeys>("api-keys.json");
+
+  if (!users) {
+    throw new FileNotFoundError("ไม่สามารถอ่านไฟล์ข้อมูลได้", "api-keys.json");
+  }
+
+  for (const user of users) {
+    if (user.userId === userId) {
+      return user.isActiveKey;
+    }
+  }
+
+  return false;
+}
+
+export const isApiKeyExpired = async (userId: string): Promise<boolean> => {
+  const users: UserApiKeys | null = await DataReader.readAllData<UserApiKeys>("api-keys.json");
+
+  if (!users) {
+    throw new FileNotFoundError("ไม่สามารถอ่านไฟล์ข้อมูลได้", "api-keys.json");
+  }
+
+  for (const user of users) {
+    if (user.userId === userId) {
+      const currentDate: Date = new Date();
+      const expiryDate: Date = new Date(user.expiresIn);
+      return currentDate > expiryDate;
+    }
   }
 
   return true;

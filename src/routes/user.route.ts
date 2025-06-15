@@ -8,6 +8,6 @@ userRoutes.get("/api/user/data", userController.getUserData)
     .put("/api/users/update/:userId", userController.updateUser)
     .patch("/api/users/update/:userId/password", userController.updatePassword)
     .delete("/api/users/delete/:userId", userController.deleteUserAccount)
-    .post("/api/user/key", userController.createApiKey)
+    .post("/api/user/api-key", userController.createApiKey)
 
 export default userRoutes;
