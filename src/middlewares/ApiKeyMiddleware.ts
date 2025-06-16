@@ -8,9 +8,7 @@ import { UserModel } from "../types/models/user.js";
 
 export default class ApiKeyMiddleware {
     public static async validateKey({ headers }: Request, res: Response, next: NextFunction): Promise<void> {
-        console.log(1);
         const key: string | undefined = (<CustomHeaders>headers)["developerthai-api-key"];
-        console.log(key);
 
         try {
             if (!isAuthorized(headers.authorization)) {
@@ -24,7 +22,6 @@ export default class ApiKeyMiddleware {
             const token: string = getToken(headers.authorization);
             const { userId }: UserModel & JwtPayload = <UserModel & JwtPayload>jwt.decode(token);
             if (await isApiKeyExists("key", key) && await isApiKeyActive(userId) && !await isApiKeyExpired(userId)) {
-                console.log(2);
                 next();
                 return;
             } else if (!await isApiKeyActive(userId) && await isApiKeyExists("key", key)) {
