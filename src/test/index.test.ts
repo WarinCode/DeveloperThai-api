@@ -24,7 +24,6 @@ testing(() => {
 }, false);
 
 testing(() => {
-    console.log(getEnv("NODE_ENV"));
     console.log(getRootPath());
     console.log(getStaticPath());
     console.log(getDataPath("books.json"));
@@ -80,8 +79,6 @@ testing(() => {
     dotenv.configDotenv(dotenvOptions);
     console.log(process.env.PORT);
     console.log(process.env.SECRET_KEY);
-    console.log(process.env.NODE_ENV);
     console.log(getEnv("PORT"));
     console.log(getEnv("SECRET_KEY"));
-    console.log(getEnv("NODE_ENV"));
 }, false)

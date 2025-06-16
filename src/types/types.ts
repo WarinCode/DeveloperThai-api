@@ -1,7 +1,6 @@
 import { IncomingHttpHeaders } from "http";
 
 export interface EnvironmentVariables extends NodeJS.ProcessEnv {
-    readonly NODE_ENV: "development" | "production";
     readonly PORT: string;
     readonly SECRET_KEY: string;
 }
