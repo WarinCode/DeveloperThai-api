@@ -24,10 +24,11 @@ testing(() => {
 }, false);
 
 testing(() => {
+    console.log(getEnv("NODE_ENV"));
     console.log(getRootPath());
     console.log(getStaticPath());
     console.log(getDataPath("books.json"));
-}, false);
+}, true);
 
 testing(async () => {
     for (let i: number = 1; i <= 10; i++) {
