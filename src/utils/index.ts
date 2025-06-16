@@ -59,9 +59,8 @@ export const getEnv = (key: keyof EnvironmentVariables): string => {
 export const getRootPath = (): string => {
   const file: string = fileURLToPath(import.meta.url);
   const dirname: string = path.dirname(file);
-
-
-  return dirname.replace("\\src\\utils", "");
+  return dirname.replace("/src/utils", "");
+  // return dirname.replace("\\src\\utils", "");
 };
 
 export const getDataPath = (filename: DataFiles): string => {

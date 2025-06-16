@@ -11,6 +11,7 @@ export default class ApiKeyMiddleware {
         const key: string | undefined = (<CustomHeaders>headers)["developerthai-api-key"];
 
         try {
+
             if (!isAuthorized(headers.authorization)) {
                 throw new HttpResponseError("ผู้ใช้งานยืนยันตัวตนไม่ถูกต้อง!", 403);
             }

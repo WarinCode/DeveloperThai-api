@@ -1,18 +1,1 @@
-[
-    {
-        "username": "root",
-        "userId": "qlf4jlWd1RmKluEb65JkFWKJea8kZVIy7BWPxxli",
-        "key": "Yh2HF8ZUCFfZUznkn3YV0RZLxfpNUKpUvcTLcrwPpAQVRljGYlbOEbJNaRtSht6iamsvsveJFAokb82WaruUtAmD2CGVbg087JyM",
-        "isActiveKey": true,
-        "createdAt": "2025-06-15T14:04:37.871Z",
-        "expiresIn": "2025-06-22T14:04:37.871Z"
-    },
-    {
-        "username": "root2",
-        "userId": "auPTrDgScCAZDketwpp0e8eefELdxunCsg58zGd8",
-        "key": "Q2FPEUYzllCVj2Ih1Irg6ycYikKUU9ApN3spGvWYjAktIC8f9400XtYhMOjnIi6hpkAmy0IEyZXXyYlqgbMkDG7jwTQANi8aRKTm",
-        "isActiveKey": true,
-        "createdAt": "2025-06-15T15:49:41.546Z",
-        "expiresIn": "2025-06-22T15:49:41.546Z"
-    }
-]
+[]

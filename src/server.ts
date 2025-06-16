@@ -28,7 +28,8 @@ app
   .use(helmet())
   .use(compression(compressionOptions))
   .use("/api/*", AuthMiddleware.authorization)
-  .use("/api/books/*", ApiKeyMiddleware.validateKey);
+  .use("/api/books", ApiKeyMiddleware.validateKey);
+
 app
   .get("/", userController.sendHelloWorld)
   .post("/sign-in", userController.signIn)
