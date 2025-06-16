@@ -1,1 +1,14 @@
-[]
+[
+    {
+        "username": "root",
+        "email": "root@gmail.com",
+        "password": "$2b$10$MqlAV8lktGvQezGQcEpaueEG6cLvjI20rXUtE6zyDKCS3cMqGGed.",
+        "userId": "qlf4jlWd1RmKluEb65JkFWKJea8kZVIy7BWPxxli"
+    },
+    {
+        "username": "root2",
+        "email": "root2@gmail.com",
+        "password": "$2b$10$ao3L3gGJiZxTLrNFVjsgt.rBwA.74rlRjm0GfoK2O7Affwr/3k2dO",
+        "userId": "auPTrDgScCAZDketwpp0e8eefELdxunCsg58zGd8"
+    }
+]
