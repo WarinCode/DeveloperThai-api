@@ -4,7 +4,7 @@ import { responseError, getToken } from "../utils/index.js";
 import { EnvironmentVariables } from "../types/types.js";
 import { UserModel } from "../types/models/user.js";
 import HttpResponseError from "../error/HttpResponseError.js";
-import { isAuthorized } from "../utils/index.js";
+import { isAuthorized, getEnv } from "../utils/index.js";
 
 export default class AuthMiddleware {
   public static authorization(
@@ -12,7 +12,7 @@ export default class AuthMiddleware {
     res: Response,
     next: NextFunction
   ): void {
-    const secretKey: string = (<EnvironmentVariables>process.env).SECRET_KEY;
+    const secretKey: string = getEnv("SECRET_KEY");
 
     try {
       if (!isAuthorized(authorization)) {

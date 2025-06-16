@@ -5,7 +5,7 @@ import UserSchema from "../types/schemas/user.js";
 import DataWriter from "../utils/classes/DataWriter.js";
 import DataReader from "../utils/classes/DataReader.js";
 import { UserParams, EnvironmentVariables } from "../types/types.js";
-import { responseError, generateUserId, isUserExists, getUserbyUsernameAndPassword, getToken, generateApiKey, getApiKey, isAuthorized, isApiKeyActive, isApiKeyExists } from "../utils/index.js";
+import { responseError, generateUserId, isUserExists, getUserbyUsernameAndPassword, getToken, generateApiKey, getApiKey, isAuthorized, isApiKeyActive, isApiKeyExists, isApiKeyExpired } from "../utils/index.js";
 import { UserModel, Users, UserLogin } from "../types/models/user.js";
 import * as UserPropertySchema from "../types/schemas/user.js";
 import HttpResponseError from "../error/HttpResponseError.js";
@@ -129,7 +129,10 @@ export default class UserController {
                 let newToken: string = "";
                 const secretKey: string = (<EnvironmentVariables>process.env).SECRET_KEY;
                 const hashPassword: string = await bcrypt.hash(password, 10);
-                const users: Users = <Users>await DataReader.readAllData<Users>("users.json");
+                const users: Users | null = await DataReader.readAllData<Users>("users.json");
+                if (!users) {
+                    throw new FileNotFoundError("ไม่สามารถอ่านข้อมูลได้", "users.json");
+                }
                 const updatedUser: Users = users.map((user: UserModel): UserModel => {
                     if (user.userId === userId) {
                         user.password = hashPassword;
@@ -208,10 +211,14 @@ export default class UserController {
             }
 
             const token: string = getToken(authorization);
-            const user: UserModel = <UserModel>jwt.decode(token);
+            const user: UserModel & JwtPayload = <UserModel & JwtPayload>jwt.decode(token);
+
+            if (!await isUserExists(user.userId)) {
+                throw new HttpResponseError("รหัส id ของผู้ใช้งานไม่ถูกต้อง!", 403);
+            }
 
             const apiKey: string | null = await getApiKey(user.userId);
-            if (apiKey) {
+            if (apiKey && !await isApiKeyExpired(user.userId)) {
                 res.type("json").status(201).json({ message: "ส่ง api key เรียบร้อย", apiKey });
                 return;
             }

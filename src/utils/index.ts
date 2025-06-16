@@ -212,7 +212,7 @@ export const getToken = (authorization: string | undefined): string => {
 };
 
 export const isAuthorized = (authorization: string | undefined): boolean => {
-  const secretKey: string = (<EnvironmentVariables>process.env).SECRET_KEY;
+  const secretKey: string = getEnv("SECRET_KEY");
   let isVerifyError: boolean = false;
 
   if (!authorization || !authorization?.startsWith("Bearer")) {
