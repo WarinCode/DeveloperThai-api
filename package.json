@@ -7,7 +7,7 @@
     "dev": "NODE_ENV=development && tsx --watch src/server.ts",
     "test": "NODE_ENV=development && tsx src/test/index.test.ts",
     "copy-data": "copyfiles -u 2 src/data/*.json build/data/",
-    "build": "NODE_ENV=production && npm install -g typescript && tsc && npm run copy-data",
+    "build": "NODE_ENV=production && npm install && npx tsc && npm run copy-data",
     "start": "node build/server.js"
   },
   "keywords": [],
