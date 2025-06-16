@@ -28,7 +28,7 @@ testing(() => {
     console.log(getRootPath());
     console.log(getStaticPath());
     console.log(getDataPath("books.json"));
-}, true);
+}, false);
 
 testing(async () => {
     for (let i: number = 1; i <= 10; i++) {
