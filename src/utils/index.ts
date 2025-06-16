@@ -53,14 +53,13 @@ export const responseError = (
 export const getEnv = (key: keyof EnvironmentVariables): string => {
   configDotenv(dotenvOptions);
   const env: EnvironmentVariables = process.env as EnvironmentVariables;
-  return (<string>env[key]).trim();
+  return <string>env[key];
 }
 
 export const getRootPath = (): string => {
   const file: string = fileURLToPath(import.meta.url);
   const dirname: string = path.dirname(file);
-  return dirname.replace("/src/utils", "");
-  // return dirname.replace("\\src\\utils", "");
+  return dirname.replace("\\src\\utils", "");
 };
 
 export const getDataPath = (filename: DataFiles): string => {
