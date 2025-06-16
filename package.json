@@ -4,9 +4,10 @@
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
-    "copy-data": "copyfiles -u 2 src/data/books.json build/data/",
-    "build": "npx tsc && npm run copy-data",
-    "dev": "tsx --watch src/server.ts",
+    "dev": "SET NODE_ENV=development && tsx --watch src/server.ts",
+    "test": "SET NODE_ENV=development && tsx src/test/index.test.ts",
+    "copy-data": "copyfiles -u 2 src/data/*.json build/data/",
+    "build": "SET NODE_ENV=production && npx tsc && npm run copy-data",
     "start": "node build/server.js"
   },
   "keywords": [],
@@ -14,19 +15,30 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "compression": "^1.8.0",
+    "copyfiles": "^2.4.1",
     "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.5.0",
     "express": "^4.21.1",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
-    "tsx": "^4.19.2"
+    "tsx": "^4.19.2",
+    "zod": "^3.25.57"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "@types/compression": "^1.8.1",
+    "@types/copyfiles": "^2.4.4",
     "@types/cors": "^2.8.17",
     "@types/dotenv": "^6.1.1",
     "@types/express": "^5.0.0",
+    "@types/express-rate-limit": "^5.1.3",
+    "@types/helmet": "^0.0.48",
+    "@types/jsonwebtoken": "^9.0.9",
     "@types/morgan": "^1.9.9",
-    "@types/node": "^22.9.1",
-    "copyfiles": "^2.4.1",
     "typescript": "^5.6.3"
   }
 }

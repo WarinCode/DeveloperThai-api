@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information</title>
+    <link rel="stylesheet" href="../style/style.css">
+</head>
+
+<body>
+    <div class="loading" style="display: none;">
+        <h3>Loading ...</h3>
+    </div>
+
+    <div class="container">
+        <h1>รายละเอียดข้อมูลผู้ใช้งาน</h1>
+        <div>
+            <p>ชื่อผู้ใช้งาน: <span class="show-username"></span></p>
+            <p>อีเมล: <span class="show-email"></span></p>
+            <p>รหัส id ผู้ใช้งาน: <span class="show-id"></span></p>
+        </div>
+
+        <div>
+            <p>สถานะของ Key: <span class="is-active"></span></p>
+            <p>Key: <span class="show-key"></span></p>
+            <div style="display: flex; align-items: center; width: 300px; justify-content: space-between;">
+                <button class="btn-create">สร้าง api key</button>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px;" class="btn-group">
+            <button class="btn-edit-user">แก้ไขข้อมูลผู้ใช้งาน</button>
+            <button class="btn-edit-password">เปลี่ยนรหัสผ่าน</button>
+            <button class="btn-logout" style="margin-inline: 1rem;">ออกจากระบบ</button>
+            <button class="btn-delete">ลบบัญชี</button>
+        </div>
+    </div>
+
+    <p class="error" style="display: none; color: red;">เกิดข้อผิดพลาดขึ้นไม่ามารถดึงข้อมูลผู้ใช้งานมาได้!</p>
+
+    <form id="user-form" style="margin-top: 40px; display: none;">
+        <div>
+            <label for="username">
+                <span>ชื่อผู้ใช้งาน: </span>
+                <input type="text" id="username" name="username" required>
+            </label>
+        </div>
+        <div>
+            <label for="email">
+                <span>อีเมล: </span>
+                <input type="email" id="email" name="email" required>
+            </label>
+        </div>
+        <button type="submit">แก้ไขข้อมูลผู้ใช้งาน</button>
+    </form>
+
+    <form id="password-form" style="margin-top: 40px; display: none;">
+        <div>
+            <label for="password">
+                <span>รหัสผ่านใหม่: </span>
+                <input type="password" id="password" name="password" required>
+            </label>
+        </div>
+        <button type="submit">เปลี่ยนรหัสผ่าน</button>
+    </form>
+
+    <script type="module">
+        const user = { username: null, email: null, userId: null, apiKey: null };
+
+        const redirect = () => {
+            location.href = "http://localhost:3000/pages/sign-in.html";
+        }
+
+        (async () => {
+            if (!localStorage.getItem("token")) {
+                document.querySelector(".error").style.display = "block";
+                document.querySelector(".container").style.display = "none";
+                return;
+            }
+
+            document.querySelector(".loading").style.display = "block";
+            document.querySelector(".container").style.display = "none";
+
+            try {
+                const token = localStorage.getItem("token");
+
+                const response = await fetch("http://localhost:3000/api/user/data", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+
+                if (response.status === 200) {
+                    user.username = data.username;
+                    user.email = data.email;
+                    user.userId = data.userId;
+                    user.apiKey = data.apiKey;
+                    document.querySelector(".show-username").textContent = user.username;
+                    document.querySelector(".show-email").textContent = user.email;
+                    document.querySelector(".show-id").textContent = user.userId;
+                    document.querySelector(".show-key").textContent = user.apiKey;
+
+                    if (user.apiKey) {
+                        document.querySelector(".is-active").textContent = data.isActiveKey ? "เปิดใช้งาน" : "ปิดใช้งาน";
+                        document.querySelector(".is-active").style.color = data.isActiveKey ? "green" : "red";
+                    }
+
+                    document.querySelector(".loading").style.display = "none";
+                    document.querySelector(".container").style.display = "block";
+                    return;
+                }
+
+                throw new Error("เกิดข้อผิดพลาดขึ้นไม่ามารถดึงข้อมูลผู้ใช้งานมาได้!");
+            } catch (e) {
+                alert(e?.message);
+                document.querySelector(".container").style.display = "none";
+                document.querySelector(".error").style.display = "block";
+            }
+        })();
+
+        const fetchApiKey = async () => {
+            if (user.apiKey) {
+                return;
+            }
+
+            const token = localStorage.getItem("token");
+
+            try {
+                const response = await fetch("http://localhost:3000/api/user/api-key", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    }
+                })
+                const { message, apiKey, isActiveKey } = await response.json();
+
+                if (response.status === 201) {
+                    user.apiKey = apiKey
+                    document.querySelector(".show-key").textContent = user.apiKey;
+                    document.querySelector(".is-active").textContent = isActiveKey ? "เปิดใช้งาน" : "ปิดใช้งาน";
+                    document.querySelector(".is-active").style.color = isActiveKey ? "green" : "red";
+                    alert(message);
+                }
+            } catch (e) {
+                console.error(e);
+                alert(e?.message);
+            }
+        }
+
+        const logout = async () => {
+            localStorage.removeItem("token");
+            redirect();
+        }
+
+        const showUserForm = async () => {
+            const toggleDisplay = document.querySelector("#user-form").style.display === "none";
+            document.querySelector("#user-form").style.display = toggleDisplay ? "block" : "none";
+            document.querySelector("#username").value = user.username;
+            document.querySelector("#email").value = user.email;
+        }
+
+        const showPasswordForm = async () => {
+            const toggleDisplay = document.querySelector("#password-form").style.display === "none";
+            document.querySelector("#password-form").style.display = toggleDisplay ? "block" : "none";
+            document.querySelector("#username").value = user.username;
+            document.querySelector("#email").value = user.email;
+        }
+
+        const updateUserData = async (e) => {
+            document.querySelector('#user-form > button').disabled = true;
+            e.preventDefault();
+            const data = {
+                username: document.querySelector("#username").value.trim(),
+                email: document.querySelector("#email").value.trim(),
+                userId: user.userId
+            }
+            const token = localStorage.getItem("token");
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/users/update/${user.userId}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                const { message, username, email, newToken } = await response.json();
+
+                if (response.status === 200) {
+                    localStorage.setItem("token", newToken);
+                    document.querySelector(".show-username").textContent = username;
+                    document.querySelector(".show-email").textContent = email;
+                    user.username = username;
+                    user.email = email;
+                    document.querySelector("#user-form").style.display = "none";
+                }
+
+                alert(message);
+            } catch (err) {
+                console.error(err);
+                alert(err?.message);
+            } finally {
+                document.querySelector('#user-form > button').disabled = false;
+            }
+        }
+
+        const updatePassword = async (e) => {
+            document.querySelector("#password-form").disabled = true;
+            e.preventDefault();
+
+            const data = {
+                password: document.querySelector("#password").value.trim()
+            }
+            const token = localStorage.getItem("token");
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/users/update/${user.userId}/password`, {
+                    method: "PATCH",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                const { message, newToken } = await response.json();
+
+                if (response.status === 200) {
+                    localStorage.setItem("token", newToken);
+                    document.querySelector("#password").value = "";
+                    document.querySelector("#password-form").style.display = "none";
+                }
+
+                alert(message);
+            } catch (err) {
+                console.error(err);
+                alert(err?.message);
+            } finally {
+                document.querySelector("#password-form").disabled = false;
+            }
+        }
+
+        const deleteUserAccount = async () => {
+            const token = localStorage.getItem("token");
+
+            if (!confirm("คุณแน่ใจว่าจะต้องการลบบัญชีนี้ของคุณใช้ไหม?")) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`http://localhost:3000/api/users/delete/${user.userId}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if (response.status === 200) {
+                    alert("ลบบัญชีผู้ใช้งานสำเร็จ");
+                    logout();
+                }
+            } catch (e) {
+                console.error(e);
+                alert(e?.message);
+            }
+        }
+
+        document.querySelector(".btn-create").addEventListener("click", fetchApiKey);
+        document.querySelector(".btn-edit-user").addEventListener("click", showUserForm);
+        document.querySelector(".btn-edit-password").addEventListener("click", showPasswordForm);
+        document.querySelector("#user-form").addEventListener("submit", updateUserData);
+        document.querySelector("#password-form").addEventListener("submit", updatePassword);
+        document.querySelector(".btn-logout").addEventListener("click", logout);
+        document.querySelector(".btn-delete").addEventListener("click", deleteUserAccount);
+    </script>
+    <!-- <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script> -->
+</body>
+
+</html>

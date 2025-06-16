@@ -1,33 +1,39 @@
 import express, { Express, urlencoded, json } from "express";
-import morgan from "morgan";
+import logger from "morgan";
 import cors from "cors";
-import dotenv from "dotenv";
-import { EnvironmentVariables } from "./types/types.js";
-import BookController from "./controllers/book.controller.js";
+import compression from "compression";
+import helmet from "helmet";
+import { configDotenv } from "dotenv";
+import UserController from "./controllers/user.controller.js";
+import AuthMiddleware from "./middlewares/AuthMiddleware.js";
+import ApiKeyMiddleware from "./middlewares/ApiKeyMiddleware.js";
+import bookRoutes from "./routes/book.route.js";
+import userRoutes from "./routes/user.route.js";
+import { getStaticPath, getEnv } from "./utils/index.js";
+import { corsOptions, dotenvOptions, limiter, compressionOptions } from "./configuration/index.js";
 
-// สร้าง object ชื่อ app
 const app: Express = express();
 
-// อ่านค่าตัวแปรในไฟล์ .env แล้วกำหนดค่าหมายเลข port
-dotenv.config();
-const port: number = parseInt((<EnvironmentVariables>process.env).PORT) ?? 3000;
-const bookController: BookController = new BookController();
+configDotenv(dotenvOptions);
+const port: number = getEnv("PORT") ? parseInt(<string>getEnv("PORT")) : 3000;
+const userController: UserController = new UserController();
 
-// ใช้ middlewares
 app
   .use(urlencoded({ extended: true }))
   .use(json())
-  .use(morgan("dev"))
-  .use(cors());
-
-// กำหนดเส้น api endpoints ทั้งหมด
+  .use(logger("dev"))
+  .use(cors(corsOptions))
+  .use(express.static(getStaticPath()))
+  .use(limiter)
+  .use(helmet())
+  .use(compression(compressionOptions))
+  .use("/api/*", AuthMiddleware.authorization)
+  .use("/api/books/*", ApiKeyMiddleware.validateKey);
 app
-  .get("/", bookController.sendHelloWorld)
-  .get("/api/books", bookController.getBooks)
-  .get("/api/books/search", bookController.search) // /api/books/search/?keyword=:keyword
-  .get("/api/books/:isbn", bookController.getBook)
-  .post("/api/create", bookController.create)
-  .put("/api/update/:isbn", bookController.update)
-  .delete("/api/delete/:isbn", bookController.delete)
-  .all("*", bookController.pageNotFound)
+  .get("/", userController.sendHelloWorld)
+  .post("/sign-in", userController.signIn)
+  .post("/sign-up", userController.signUp)
+  .use(bookRoutes)
+  .use(userRoutes)
+  .all("*", userController.pageNotFound)
   .listen(port, (): void => console.log(`Server is running on port: ${port}`));
